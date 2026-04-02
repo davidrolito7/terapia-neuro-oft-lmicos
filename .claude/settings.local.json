@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(npx shadcn-vue@latest:*)",
+      "WebFetch(domain:shadcn-vue.com)",
+      "Bash(curl -s \"https://shadcn-vue.com/r/styles/default/dashboard-01.json\")",
+      "Bash(curl -s \"https://shadcn-vue.com/registry.json\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(x['name']\\) for x in data.get\\('items',[]\\)]\")",
+      "Bash(curl -s \"https://shadcn-vue.com/r/dashboard-01.json\")",
+      "Bash(curl -s \"https://shadcn-vue.com/registry/styles/default/dashboard-01.json\")"
+    ]
+  }
+}
