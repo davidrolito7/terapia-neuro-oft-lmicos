@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): HtmlString => new HtmlString(<<<'HTML'
                 <style>
                     .fi-simple-layout {
-                        background-image: url('/storage/fondo.jpeg') !important;
+                        background-image: url('https://neuro-rehabilitacion-visual-jgm.com/img/fondo.jpeg') !important;
                         background-size: cover !important;
                         background-position: center !important;
                         position: relative !important;

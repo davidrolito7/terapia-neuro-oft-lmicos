@@ -20,7 +20,7 @@ const showingNavigationDropdown = ref(false);
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center overflow-hidden" style="width: 7rem;">
                                 <Link :href="route('dashboard')">
-                                    <img src="/img/logo1.png" alt="Logo" class="block h-28 w-auto scale-[1.35] " />
+                                    <img src="https://neuro-rehabilitacion-visual-jgm.com/img/logo1.png" alt="Logo" class="block h-28 w-auto scale-[1.35] " />
                                 </Link>
                             </div>
 

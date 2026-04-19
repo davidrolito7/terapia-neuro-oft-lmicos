@@ -4,7 +4,7 @@
 <template>
     <div
         class="relative flex min-h-screen overflow-hidden"
-        style="background-image: url('/img/fondo.jpeg'); background-size: cover; background-position: center;"
+        style="background-image: url('https://neuro-rehabilitacion-visual-jgm.com/img/fondo.jpeg'); background-size: cover; background-position: center;"
     >
         <!-- Máscara oscura -->
         <div class="absolute inset-0 bg-black/65 backdrop-blur-[2px]"></div>
@@ -16,7 +16,7 @@
             <div class="hidden lg:flex flex-1 items-center justify-center">
                 <div class="overflow-hidden" style="width: 300px; height: 300px;">
                     <img
-                        src="/img/logo1.png"
+                        src="https://neuro-rehabilitacion-visual-jgm.com/img/logo1.png"
                         alt="Logo"
                         class="w-full h-full object-contain scale-[1.35]"
                     />
