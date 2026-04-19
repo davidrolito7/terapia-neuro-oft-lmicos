@@ -1,0 +1,135 @@
+{
+  "___vite-browser-external-Cfsk5NWo.js": {
+    "file": "assets/__vite-browser-external-Cfsk5NWo.js",
+    "name": "__vite-browser-external"
+  },
+  "__vite-optional-peer-dep:esbuild:vite": {
+    "file": "assets/__vite-optional-peer-dep_esbuild_vite-DyV1uMC-.js",
+    "name": "__vite-optional-peer-dep_esbuild_vite",
+    "src": "__vite-optional-peer-dep:esbuild:vite",
+    "isDynamicEntry": true
+  },
+  "__vite-optional-peer-dep:tsx/cjs/api:vite": {
+    "file": "assets/api_vite-Bm22yOQf.js",
+    "name": "api_vite",
+    "src": "__vite-optional-peer-dep:tsx/cjs/api:vite",
+    "isDynamicEntry": true
+  },
+  "__vite-optional-peer-dep:yaml:vite": {
+    "file": "assets/__vite-optional-peer-dep_yaml_vite-CDS44cAi.js",
+    "name": "__vite-optional-peer-dep_yaml_vite",
+    "src": "__vite-optional-peer-dep:yaml:vite",
+    "isDynamicEntry": true
+  },
+  "_chunk-LwKMAbvB.js": {
+    "file": "assets/chunk-LwKMAbvB.js",
+    "name": "chunk",
+    "imports": [
+      "___vite-browser-external-Cfsk5NWo.js"
+    ]
+  },
+  "_lib-Cm5RJTnE.js": {
+    "file": "assets/lib-Cm5RJTnE.js",
+    "name": "lib",
+    "imports": [
+      "_chunk-LwKMAbvB.js"
+    ]
+  },
+  "node_modules/jiti/lib/jiti.mjs": {
+    "file": "assets/jiti-BpYciIx9.js",
+    "name": "jiti",
+    "src": "node_modules/jiti/lib/jiti.mjs",
+    "isDynamicEntry": true,
+    "imports": [
+      "___vite-browser-external-Cfsk5NWo.js",
+      "resources/js/app.js"
+    ]
+  },
+  "node_modules/laravel-vite-plugin/dist/index.js": {
+    "file": "assets/index-B5NaVFWl.js",
+    "src": "node_modules/laravel-vite-plugin/dist/index.js"
+  },
+  "node_modules/lightningcss/node/index.mjs": {
+    "file": "assets/node-ClRnqJws.js",
+    "name": "node",
+    "src": "node_modules/lightningcss/node/index.mjs",
+    "isDynamicEntry": true,
+    "imports": [
+      "___vite-browser-external-Cfsk5NWo.js"
+    ]
+  },
+  "node_modules/postcss/lib/postcss.mjs": {
+    "file": "assets/postcss-DF7Gm_Yo.js",
+    "name": "postcss",
+    "src": "node_modules/postcss/lib/postcss.mjs",
+    "isDynamicEntry": true,
+    "imports": [
+      "___vite-browser-external-Cfsk5NWo.js",
+      "resources/js/app.js"
+    ]
+  },
+  "node_modules/rolldown/dist/shared/prompt-BYQIwEjg.mjs": {
+    "file": "assets/prompt-BYQIwEjg-BWUZJGXK.js",
+    "name": "prompt-BYQIwEjg",
+    "src": "node_modules/rolldown/dist/shared/prompt-BYQIwEjg.mjs",
+    "isDynamicEntry": true,
+    "imports": [
+      "___vite-browser-external-Cfsk5NWo.js"
+    ]
+  },
+  "node_modules/vite/dist/node/chunks/build2.js": {
+    "file": "assets/build2-1epBNq75.js",
+    "name": "build2",
+    "src": "node_modules/vite/dist/node/chunks/build2.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_chunk-LwKMAbvB.js",
+      "_lib-Cm5RJTnE.js"
+    ]
+  },
+  "node_modules/vite/dist/node/chunks/postcss-import.js": {
+    "file": "assets/postcss-import-BygJ1Sb0.js",
+    "name": "postcss-import",
+    "src": "node_modules/vite/dist/node/chunks/postcss-import.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_chunk-LwKMAbvB.js",
+      "_lib-Cm5RJTnE.js"
+    ]
+  },
+  "node_modules/vite/dist/node/index.js": {
+    "file": "assets/node-CHJ9jRn6.js",
+    "name": "node",
+    "src": "node_modules/vite/dist/node/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-BlxZ9b2Q.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "___vite-browser-external-Cfsk5NWo.js",
+      "_chunk-LwKMAbvB.js"
+    ],
+    "dynamicImports": [
+      "node_modules/rolldown/dist/shared/prompt-BYQIwEjg.mjs",
+      "__vite-optional-peer-dep:esbuild:vite",
+      "___vite-browser-external-Cfsk5NWo.js",
+      "__vite-optional-peer-dep:tsx/cjs/api:vite",
+      "node_modules/jiti/lib/jiti.mjs",
+      "__vite-optional-peer-dep:yaml:vite",
+      "node_modules/vite/dist/node/chunks/postcss-import.js",
+      "node_modules/vite/dist/node/chunks/build2.js",
+      "node_modules/postcss/lib/postcss.mjs",
+      "node_modules/lightningcss/node/index.mjs",
+      "resources/js/app.js"
+    ],
+    "assets": [
+      "assets/index-B5NaVFWl.js"
+    ]
+  }
+}
