@@ -18,7 +18,9 @@
       "Bash(php -l app/Filament/Resources/Patients/Schemas/PatientForm.php)",
       "Bash(php -l app/Filament/Resources/ExerciseSessions/Schemas/ExerciseSessionForm.php)",
       "Bash(php -l app/Filament/Forms/Components/CanvasPreview.php)",
-      "Bash(php -r ':*)"
+      "Bash(php -r ':*)",
+      "Bash(node -e ':*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

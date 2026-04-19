@@ -2,11 +2,12 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
     plugins: [
         laravel({
             input: 'resources/js/app.js',
-            refresh: true,
+            // refresh solo activo en dev; en build evita importar chokidar/fsevents
+            refresh: command === 'serve',
         }),
         vue({
             template: {
@@ -17,4 +18,4 @@ export default defineConfig({
             },
         }),
     ],
-});
+}));
