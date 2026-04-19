@@ -8,7 +8,17 @@
       "Bash(curl -s \"https://shadcn-vue.com/registry.json\")",
       "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(x['name']\\) for x in data.get\\('items',[]\\)]\")",
       "Bash(curl -s \"https://shadcn-vue.com/r/dashboard-01.json\")",
-      "Bash(curl -s \"https://shadcn-vue.com/registry/styles/default/dashboard-01.json\")"
+      "Bash(curl -s \"https://shadcn-vue.com/registry/styles/default/dashboard-01.json\")",
+      "Bash(grep:*)",
+      "Bash(php artisan:*)",
+      "Bash(php -l /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/app/Filament/Resources/ExercisePlans/Schemas/ExercisePlanForm.php)",
+      "Bash(php -l /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/app/Filament/Resources/ExerciseSessions/Schemas/ExerciseSessionForm.php)",
+      "Bash(php -l /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/app/Filament/Forms/Components/CanvasPreview.php)",
+      "Bash(php -l app/Filament/Resources/ExercisePlans/Schemas/ExercisePlanForm.php)",
+      "Bash(php -l app/Filament/Resources/Patients/Schemas/PatientForm.php)",
+      "Bash(php -l app/Filament/Resources/ExerciseSessions/Schemas/ExerciseSessionForm.php)",
+      "Bash(php -l app/Filament/Forms/Components/CanvasPreview.php)",
+      "Bash(php -r ':*)"
     ]
   }
 }

@@ -2,119 +2,83 @@
 import { computed } from 'vue';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import {
-    Activity,
     ArrowRight,
+    CheckCircle2,
     Clock,
     Eye,
-    Flame,
     LayoutDashboard,
-    Target,
     Zap,
 } from 'lucide-vue-next';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/Components/ui/card';
-import { Separator } from '@/Components/ui/separator';
+import Badge from '@/Components/ui/Badge.vue';
+import Button from '@/Components/ui/Button.vue';
+import Card from '@/Components/ui/Card.vue';
+import CardContent from '@/Components/ui/CardContent.vue';
+import CardDescription from '@/Components/ui/CardDescription.vue';
+import CardFooter from '@/Components/ui/CardFooter.vue';
+import CardHeader from '@/Components/ui/CardHeader.vue';
+import CardTitle from '@/Components/ui/CardTitle.vue';
+import Separator from '@/Components/ui/Separator.vue';
 
-const page = usePage();
-const user = computed(() => page.props.auth.user);
+const props = defineProps({
+    plan:          { type: Object,  default: null },
+    ejercicios:    { type: Array,   default: () => [] },
+    porcentaje:    { type: Number,  default: 0 },
+    proximaSesion: { type: Object,  default: null },
+});
 
+const page     = usePage();
+const user     = computed(() => page.props.auth.user);
 const firstName = computed(() => user.value?.name?.split(' ')[0] ?? 'Usuario');
 
-// ─── Datos de ejemplo ─────────────────────────────────────────────────────────
-// En el futuro estos vendrán del servidor vía Inertia props
-const stats = [
-    {
-        title: 'Sesiones hoy',
-        value: '0',
-        description: 'Completa tu primera sesión',
-        icon: Activity,
-        badge: null,
-    },
-    {
-        title: 'Tiempo entrenado',
-        value: '0 min',
-        description: 'Objetivo diario: 15 min',
-        icon: Clock,
-        badge: null,
-    },
-    {
-        title: 'Racha actual',
-        value: '0 días',
-        description: '¡Empieza hoy!',
-        icon: Flame,
-        badge: null,
-    },
-    {
-        title: 'Ejercicios disponibles',
-        value: '7',
-        description: 'Tipos de seguimiento ocular',
-        icon: Target,
-        badge: { label: 'Nuevo', variant: 'default' },
-    },
-];
+// ─── Exercise type metadata ───────────────────────────────────────────────────
+const tipoIconos = {
+    circular:     '⭕',
+    circular_ccw: '🔄',
+    horizontal:   '↔',
+    vertical:     '↕',
+    diagonal:     '↗',
+    diagonal_tr:  '↘',
+    triangular:   '🔺',
+    square:       '⬛',
+    figure8:      '∞',
+    figure8_ccw:  '∞',
+    figure8_v:    '∞',
+    pendulum:     '🎷',
+    spiral:       '🌀',
+    zigzag:       '⚡',
+    saccade:      '👁',
+};
 
-const exercises = [
-    {
-        type: 'circular',
-        icon: '⭕',
-        title: 'Circular',
-        description: 'Seguimiento de un punto en trayectoria circular.',
-        level: 'Básico',
-    },
-    {
-        type: 'triangular',
-        icon: '🔺',
-        title: 'Triangular',
-        description: 'El punto recorre los vértices de un triángulo.',
-        level: 'Básico',
-    },
-    {
-        type: 'vertical',
-        icon: '↕',
-        title: 'Vertical',
-        description: 'Movimiento de arriba a abajo y viceversa.',
-        level: 'Básico',
-    },
-    {
-        type: 'horizontal',
-        icon: '↔',
-        title: 'Horizontal',
-        description: 'Movimiento de lado a lado.',
-        level: 'Básico',
-    },
-    {
-        type: 'diagonal',
-        icon: '↗',
-        title: 'Diagonal',
-        description: 'Seguimiento en trayectoria diagonal.',
-        level: 'Intermedio',
-    },
-    {
-        type: 'figure8',
-        icon: '∞',
-        title: 'Figura 8',
-        description: 'Patrón Lissajous en forma de infinito.',
-        level: 'Intermedio',
-    },
-    {
-        type: 'saccade',
-        icon: '👁',
-        title: 'Sacádico',
-        description: 'Saltos rápidos entre posiciones aleatorias.',
-        level: 'Avanzado',
-    },
-];
+const tipoNombres = {
+    circular:     'Circular',
+    circular_ccw: 'Circular inverso',
+    horizontal:   'Horizontal',
+    vertical:     'Vertical',
+    vertical_rev: 'Vertical inverso',
+    diagonal:     'Diagonal ↖↘',
+    diagonal_tr:  'Diagonal ↗↙',
+    triangular:   'Triangular',
+    square:       'Cuadrado',
+    figure8:      'Figura 8',
+    figure8_ccw:  'Figura 8 inverso',
+    figure8_v:    'Figura 8 vertical',
+    pendulum:     'Péndulo',
+    spiral:       'Espiral',
+    zigzag:       'Zigzag',
+    saccade:      'Sacádico',
+};
 
-const levelVariant = { Básico: 'secondary', Intermedio: 'default', Avanzado: 'destructive' };
+const completadosCount = computed(() =>
+    props.ejercicios.filter(e => e.completado).length
+);
+
+// El botón está habilitado solo si hay plan y la sesión está disponible ahora
+const puedeComenzar = computed(() => {
+    if (!props.plan) return false;
+    if (!props.proximaSesion) return true;          // sin configuración de horario → siempre
+    return props.proximaSesion.disponible === true;
+});
 </script>
 
 <template>
@@ -143,117 +107,134 @@ const levelVariant = { Básico: 'secondary', Intermedio: 'default', Avanzado: 'd
                             Bienvenido a tu centro de terapia visual. ¿Listo para entrenar hoy?
                         </p>
                     </div>
-                    <Button as-child size="lg">
-                        <Link :href="route('exercises.index')" class="gap-2">
+                    <Button
+                        v-if="plan"
+                        as-child
+                        size="lg"
+                        :disabled="!puedeComenzar"
+                        :class="!puedeComenzar ? 'opacity-50 pointer-events-none' : ''"
+                    >
+                        <Link :href="puedeComenzar ? route('exercises.index') : '#'" class="gap-2">
                             <Zap class="w-4 h-4" />
                             Comenzar ejercicio
                         </Link>
                     </Button>
                 </div>
 
-                <!-- Stats -->
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card v-for="stat in stats" :key="stat.title">
-                        <CardHeader class="flex flex-row items-center justify-between pb-2">
-                            <CardTitle class="text-sm font-medium text-muted-foreground">
-                                {{ stat.title }}
-                            </CardTitle>
-                            <component :is="stat.icon" class="w-4 h-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div class="flex items-end gap-2">
-                                <p class="text-2xl font-bold">{{ stat.value }}</p>
-                                <Badge v-if="stat.badge" :variant="stat.badge.variant" class="mb-0.5">
-                                    {{ stat.badge.label }}
-                                </Badge>
+                <!-- Sin plan asignado -->
+                <div v-if="!plan" class="text-center py-16 space-y-3">
+                    <div class="text-5xl">📋</div>
+                    <h3 class="text-lg font-semibold">Sin plan asignado</h3>
+                    <p class="text-muted-foreground text-sm max-w-sm mx-auto">
+                        Aún no tienes un plan de ejercicios. Consulta con tu terapeuta para que te asigne uno.
+                    </p>
+                </div>
+
+                <!-- Plan de ejercicios -->
+                <template v-else>
+
+                    <!-- Progreso general -->
+                    <Card>
+                        <CardHeader class="pb-2">
+                            <div class="flex items-center justify-between">
+                                <CardTitle class="text-base">{{ plan.nombre }}</CardTitle>
+                                <span class="text-2xl font-bold text-primary">{{ porcentaje }}%</span>
                             </div>
-                            <p class="text-xs text-muted-foreground mt-1">{{ stat.description }}</p>
+                            <CardDescription>
+                                {{ completadosCount }} de {{ ejercicios.length }} ejercicio{{ ejercicios.length !== 1 ? 's' : '' }} completado{{ completadosCount !== 1 ? 's' : '' }}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent class="space-y-3">
+                            <div class="w-full bg-muted rounded-full h-2.5">
+                                <div
+                                    class="bg-primary h-2.5 rounded-full transition-all duration-500"
+                                    :style="{ width: porcentaje + '%' }"
+                                />
+                            </div>
+
+                            <!-- Próxima sesión -->
+                            <div
+                                v-if="proximaSesion"
+                                class="flex items-center gap-2 text-sm rounded-lg px-3 py-2"
+                                :class="{
+                                    'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300': proximaSesion.tipo === 'disponible',
+                                    'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300': proximaSesion.tipo === 'espera',
+                                    'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300': proximaSesion.tipo === 'proximo_dia',
+                                }"
+                            >
+                                <Clock class="w-4 h-4 shrink-0" />
+                                <span>
+                                    <span class="font-medium">Próxima sesión:</span>
+                                    {{ proximaSesion.mensaje }}
+                                </span>
+                            </div>
                         </CardContent>
                     </Card>
-                </div>
 
-                <!-- Ejercicios disponibles -->
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-semibold">Ejercicios disponibles</h3>
-                            <p class="text-sm text-muted-foreground">
-                                Selecciona un tipo de ejercicio para comenzar tu sesión.
-                            </p>
+                    <Separator />
+
+                    <!-- Ejercicios del plan -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold">Tus ejercicios</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Selecciona un ejercicio para comenzar tu sesión.
+                                </p>
+                            </div>
                         </div>
-                        <Button variant="ghost" as-child>
-                            <Link :href="route('exercises.index')" class="gap-1">
-                                Ver todos
-                                <ArrowRight class="w-4 h-4" />
-                            </Link>
-                        </Button>
-                    </div>
 
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        <Card
-                            v-for="ex in exercises"
-                            :key="ex.type"
-                            class="group hover:shadow-md transition-shadow cursor-pointer"
-                        >
-                            <CardHeader class="pb-2">
-                                <div class="flex items-start justify-between">
-                                    <span class="text-3xl leading-none">{{ ex.icon }}</span>
-                                    <Badge :variant="levelVariant[ex.level]" class="text-xs">
-                                        {{ ex.level }}
-                                    </Badge>
-                                </div>
-                                <CardTitle class="text-base mt-2">{{ ex.title }}</CardTitle>
-                            </CardHeader>
-                            <CardContent class="pb-3">
-                                <CardDescription>{{ ex.description }}</CardDescription>
-                            </CardContent>
-                            <CardFooter>
-                                <Button variant="ghost" size="sm" as-child class="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                                    <Link :href="route('exercises.index')" class="gap-1 justify-center">
-                                        <Eye class="w-4 h-4" />
-                                        Practicar
-                                    </Link>
-                                </Button>
-                            </CardFooter>
-                        </Card>
+                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                            <Card
+                                v-for="ex in ejercicios"
+                                :key="ex.id"
+                                class="group hover:shadow-md transition-shadow"
+                                :class="ex.completado ? 'opacity-75' : ''"
+                            >
+                                <CardHeader class="pb-2">
+                                    <div class="flex items-start justify-between">
+                                        <span class="text-3xl leading-none">
+                                            {{ ex.tipo_estimulo === 'emoji' && ex.emoji_estimulo ? ex.emoji_estimulo : (tipoIconos[ex.tipo_ejercicio] ?? '👁') }}
+                                        </span>
+                                        <Badge
+                                            v-if="ex.completado"
+                                            variant="secondary"
+                                            class="text-xs gap-1 text-green-700 bg-green-100 dark:bg-green-900 dark:text-green-300"
+                                        >
+                                            <CheckCircle2 class="w-3 h-3" />
+                                            Visto
+                                        </Badge>
+                                    </div>
+                                    <CardTitle class="text-base mt-2">
+                                        {{ tipoNombres[ex.tipo_ejercicio] ?? ex.tipo_ejercicio }}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent class="pb-3">
+                                    <CardDescription class="text-xs space-y-0.5">
+                                        <div>Duración: {{ ex.duracion > 0 ? ex.duracion + 's' : 'Sin límite' }}</div>
+                                        <div>Velocidad: {{ ex.velocidad }}/10 · Tamaño: {{ ex.tamano }}</div>
+                                    </CardDescription>
+                                </CardContent>
+                                <CardFooter v-if="!ex.completado">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        as-child
+                                        class="w-full bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                                    >
+                                        <Link
+                                            :href="route('exercises.index', { start_from_id: ex.id })"
+                                            class="gap-1 justify-center"
+                                        >
+                                            <Eye class="w-4 h-4" />
+                                            Practicar
+                                        </Link>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </div>
                     </div>
-                </div>
-
-                <Separator />
-
-                <!-- Cómo usar -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-semibold">¿Cómo funciona?</h3>
-                    <div class="grid gap-4 sm:grid-cols-3">
-                        <Card class="border-dashed">
-                            <CardContent class="pt-6 text-center space-y-2">
-                                <div class="text-4xl">1️⃣</div>
-                                <h4 class="font-semibold">Elige el ejercicio</h4>
-                                <p class="text-sm text-muted-foreground">
-                                    Selecciona el tipo de trayectoria y estímulo que prefieras.
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card class="border-dashed">
-                            <CardContent class="pt-6 text-center space-y-2">
-                                <div class="text-4xl">2️⃣</div>
-                                <h4 class="font-semibold">Ajusta la configuración</h4>
-                                <p class="text-sm text-muted-foreground">
-                                    Controla velocidad, tamaño, color y duración de la sesión.
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card class="border-dashed">
-                            <CardContent class="pt-6 text-center space-y-2">
-                                <div class="text-4xl">3️⃣</div>
-                                <h4 class="font-semibold">Sigue el estímulo</h4>
-                                <p class="text-sm text-muted-foreground">
-                                    Mantén la vista en el punto en movimiento durante toda la sesión.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
+                </template>
 
             </div>
         </div>

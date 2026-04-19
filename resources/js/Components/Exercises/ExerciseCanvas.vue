@@ -2,6 +2,10 @@
 import { computed, inject, onMounted, onUnmounted, ref } from 'vue';
 import { Maximize2, Minimize2, Pause, Play, RotateCcw, Square } from 'lucide-vue-next';
 
+const props = defineProps({
+    sequenceMode: { type: Boolean, default: false },
+});
+
 const { config, engine } = inject('exercise');
 const { canvasRef, state, countdownValue, elapsedSeconds, pause, resume, stop, reset, redrawAfterResize } = engine;
 
@@ -109,7 +113,7 @@ const durationLabel = computed(() => config.duration === 0 ? '∞' : formatTime(
                     <Play class="w-4 h-4" />
                 </button>
             </template>
-            <template v-if="state === 'running' || state === 'paused'">
+            <template v-if="!sequenceMode && (state === 'running' || state === 'paused')">
                 <button class="canvas-btn" title="Detener" @click="stop()">
                     <Square class="w-4 h-4" />
                 </button>

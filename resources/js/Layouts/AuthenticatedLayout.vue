@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
@@ -19,10 +18,9 @@ const showingNavigationDropdown = ref(false);
                     <div class="flex h-16 justify-between">
                         <div class="flex">
                             <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
+                            <div class="flex shrink-0 items-center overflow-hidden" style="width: 7rem;">
                                 <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                                    <img src="/storage/logo1.png" alt="Logo" class="block h-28 w-auto scale-[1.35] " />
                                 </Link>
                             </div>
 
@@ -30,9 +28,6 @@ const showingNavigationDropdown = ref(false);
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
-                                </NavLink>
-                                <NavLink :href="route('exercises.index')" :active="route().current('exercises.index')">
-                                    Ejercicios
                                 </NavLink>
                             </div>
                         </div>
@@ -103,9 +98,6 @@ const showingNavigationDropdown = ref(false);
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
-                        </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('exercises.index')" :active="route().current('exercises.index')">
-                            Ejercicios
                         </ResponsiveNavLink>
                     </div>
 

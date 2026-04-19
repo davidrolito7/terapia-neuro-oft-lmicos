@@ -1,32 +1,42 @@
 <script setup>
 import { computed, inject } from 'vue';
 import { Pause, Play, RotateCcw, Square } from 'lucide-vue-next';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Label } from '@/Components/ui/label';
-import { Separator } from '@/Components/ui/separator';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/Components/ui/select';
-import { Slider } from '@/Components/ui/slider';
+import Badge from '@/Components/ui/Badge.vue';
+import Button from '@/Components/ui/Button.vue';
+import Card from '@/Components/ui/Card.vue';
+import CardContent from '@/Components/ui/CardContent.vue';
+import CardHeader from '@/Components/ui/CardHeader.vue';
+import CardTitle from '@/Components/ui/CardTitle.vue';
+import Label from '@/Components/ui/Label.vue';
+import Separator from '@/Components/ui/Separator.vue';
+import Select from '@/Components/ui/Select.vue';
+import SelectContent from '@/Components/ui/SelectContent.vue';
+import SelectItem from '@/Components/ui/SelectItem.vue';
+import SelectTrigger from '@/Components/ui/SelectTrigger.vue';
+import SelectValue from '@/Components/ui/SelectValue.vue';
+import Slider from '@/Components/ui/Slider.vue';
 
 const { config, engine } = inject('exercise');
 const { state, elapsedSeconds, start, pause, resume, stop, reset } = engine;
 
 // ─── Opciones ─────────────────────────────────────────────────────────────────
 const exerciseOptions = [
-    { value: 'circular',   label: '⭕  Circular' },
-    { value: 'triangular', label: '🔺  Triangular' },
-    { value: 'vertical',   label: '↕  Vertical' },
-    { value: 'horizontal', label: '↔  Horizontal' },
-    { value: 'diagonal',   label: '↗  Diagonal' },
-    { value: 'figure8',    label: '∞  Figura 8' },
-    { value: 'saccade',    label: '👁  Sacádico' },
+    { value: 'circular',     label: '⭕  Circular (horario)' },
+    { value: 'circular_ccw', label: '🔄  Circular (antihorario)' },
+    { value: 'figure8',      label: '∞  Figura 8' },
+    { value: 'figure8_ccw',  label: '∞  Figura 8 (inverso)' },
+    { value: 'figure8_v',    label: '∞  Figura 8 vertical' },
+    { value: 'horizontal',   label: '↔  Horizontal' },
+    { value: 'vertical',     label: '↕  Vertical (abajo)' },
+    { value: 'vertical_rev', label: '↕  Vertical (arriba)' },
+    { value: 'diagonal',     label: '↗  Diagonal ↖↘' },
+    { value: 'diagonal_tr',  label: '↘  Diagonal ↗↙' },
+    { value: 'triangular',   label: '🔺  Triangular' },
+    { value: 'square',       label: '⬛  Cuadrado' },
+    { value: 'pendulum',     label: '🎷  Péndulo' },
+    { value: 'spiral',       label: '🌀  Espiral' },
+    { value: 'zigzag',       label: '⚡  Zigzag (rebote)' },
+    { value: 'saccade',      label: '👁  Sacádico (aleatorio)' },
 ];
 
 const stimulusOptions = [
@@ -47,9 +57,9 @@ const canStop   = computed(() => ['running','paused','countdown'].includes(state
 const isActive  = computed(() => ['running','paused','countdown'].includes(state.value));
 
 const badgeVariant = computed(() => ({
-    idle: 'secondary', countdown: 'default',
-    running: 'default', paused: 'secondary', stopped: 'destructive',
-}[state.value] ?? 'secondary'));
+    idle: 'outline', countdown: 'default',
+    running: 'default', paused: 'outline', stopped: 'destructive',
+}[state.value] ?? 'outline'));
 
 const stateLabel = computed(() => ({
     idle: 'En espera', countdown: 'Iniciando…',

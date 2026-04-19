@@ -1,22 +1,51 @@
 <script setup>
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import { Link } from '@inertiajs/vue3';
 </script>
 
 <template>
     <div
-        class="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0 dark:bg-gray-900"
+        class="relative flex min-h-screen overflow-hidden"
+        style="background-image: url('/storage/fondo.jpeg'); background-size: cover; background-position: center;"
     >
-        <div>
-            <Link href="/">
-                <ApplicationLogo class="h-20 w-20 fill-current text-gray-500" />
-            </Link>
-        </div>
+        <!-- Máscara oscura -->
+        <div class="absolute inset-0 bg-black/65 backdrop-blur-[2px]"></div>
 
-        <div
-            class="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg dark:bg-gray-800"
-        >
-            <slot />
+        <!-- Layout de tres columnas -->
+        <div class="relative z-10 flex w-full items-center justify-between px-8 py-12 gap-6">
+
+            <!-- Columna izquierda — Logo -->
+            <div class="hidden lg:flex flex-1 items-center justify-center">
+                <div class="overflow-hidden" style="width: 300px; height: 300px;">
+                    <img
+                        src="/storage/logo1.png"
+                        alt="Logo"
+                        class="w-full h-full object-contain scale-[1.35]"
+                    />
+                </div>
+            </div>
+
+            <!-- Columna central — Formulario -->
+            <div class="flex flex-col items-center w-full lg:w-auto lg:flex-none">
+                <div class="w-full" style="width: min(100vw - 2rem, 420px);">
+                    <div class="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl px-8 py-8">
+                        <slot />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha — Aviso -->
+            <div class="hidden lg:flex flex-1 items-center justify-center">
+                <div class="max-w-xs rounded-xl border border-amber-400/30 bg-amber-500/10 backdrop-blur-sm px-6 py-5">
+                    <div class="flex gap-3">
+                        <span class="text-amber-400 text-xl leading-none mt-0.5 shrink-0">⚠️</span>
+                        <p class="text-sm text-amber-100/90 leading-relaxed">
+                            Este programa está diseñado para el uso exclusivo de pacientes neuro-oftálmicos.
+                            El uso indebido de este programa podría lesionar parcialmente a su paciente,
+                            favor de seguir las instrucciones de los profesionales a cargo.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </template>

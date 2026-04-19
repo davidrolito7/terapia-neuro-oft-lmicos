@@ -3,48 +3,70 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Paciente;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
     public function create(): Response
     {
-        return Inertia::render('Auth/Login', [
-            'canResetPassword' => Route::has('password.request'),
-            'status' => session('status'),
-        ]);
+        return Inertia::render('Auth/Login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $request->authenticate();
+        $request->validate([
+            'telefono'         => ['required', 'string'],
+            'fecha_nacimiento' => ['required', 'date'],
+        ]);
+
+        $throttleKey = Str::lower($request->string('telefono')) . '|' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            throw ValidationException::withMessages([
+                'telefono' => trans('auth.throttle', [
+                    'seconds' => $seconds,
+                    'minutes' => ceil($seconds / 60),
+                ]),
+            ]);
+        }
+
+        $paciente = Paciente::where('telefono', $request->telefono)
+            ->whereDate('fecha_nacimiento', $request->fecha_nacimiento)
+            ->whereNotNull('paciente_user_id')
+            ->first();
+
+        if (! $paciente || ! $paciente->pacienteUsuario) {
+            RateLimiter::hit($throttleKey);
+
+            throw ValidationException::withMessages([
+                'telefono' => 'Los datos ingresados no corresponden a ningún paciente registrado.',
+            ]);
+        }
+
+        RateLimiter::clear($throttleKey);
+
+        Auth::login($paciente->pacienteUsuario, false);
 
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
-
+        // Regenerar ID de sesión sin destruirla, para no cerrar la sesión de admin
+        $request->session()->regenerate(true);
         $request->session()->regenerateToken();
 
         return redirect('/');
