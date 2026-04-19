@@ -20,7 +20,8 @@
       "Bash(php -l app/Filament/Forms/Components/CanvasPreview.php)",
       "Bash(php -r ':*)",
       "Bash(node -e ':*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(git:*)"
     ]
   }
 }
