@@ -1,0 +1,1 @@
+import{g as t,t as o,r as n,o as e}from"./app-CLR-IZ4p.js";const r={class:"block text-sm font-medium text-gray-700 dark:text-gray-300"},l={key:0},c={key:1},p={__name:"InputLabel",props:{value:{type:String}},setup(a){return(s,_)=>(e(),t("label",r,[a.value?(e(),t("span",l,o(a.value),1)):(e(),t("span",c,[n(s.$slots,"default")]))]))}};export{p as _};
