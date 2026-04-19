@@ -70,7 +70,7 @@ class AdminPanelProvider extends PanelProvider
                 fn (): HtmlString => new HtmlString(<<<'HTML'
                 <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:28px;">
                     <img
-                        src="/storage/perfil.jpeg"
+                        src="https://neuro-rehabilitacion-visual-jgm.com/img/perfil.jpeg"
                         alt="Dr. Jorge Gómez Morales"
                         style="width:130px;height:130px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.35);box-shadow:0 4px 24px rgba(0,0,0,0.5);"
                     />
