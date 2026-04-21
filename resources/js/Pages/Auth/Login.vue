@@ -18,7 +18,22 @@ const submit = () => {
 <template>
     <GuestLayout>
         <Head title="Iniciar sesión" />
-            <div class="mb-6 text-center">
+
+        <!-- Video -->
+        <div class="overflow-hidden rounded-xl mb-6" style="height: 180px;">
+            <video
+                autoplay
+                loop
+                muted
+                playsinline
+                class="w-full object-cover"
+                style="margin-top: -5%; height: 110%;"
+            >
+                <source src="/img/video.mp4" type="video/mp4" />
+            </video>
+        </div>
+
+        <div class="mb-6 text-center">
             <h1 class="text-xl font-semibold text-white">
                 Inicia sesión en tu centro de terapia
             </h1>

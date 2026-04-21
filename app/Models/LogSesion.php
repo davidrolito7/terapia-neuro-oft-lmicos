@@ -12,6 +12,9 @@ class LogSesion extends Model
     protected $fillable = [
         'paciente_id',
         'plan_ejercicio_id',
+        'sesion_ejercicio_id',
+        'calificacion',
+        'observaciones',
     ];
 
     public function paciente(): BelongsTo
@@ -22,5 +25,10 @@ class LogSesion extends Model
     public function planEjercicio(): BelongsTo
     {
         return $this->belongsTo(PlanEjercicio::class, 'plan_ejercicio_id');
+    }
+
+    public function sesionEjercicio(): BelongsTo
+    {
+        return $this->belongsTo(SesionEjercicio::class, 'sesion_ejercicio_id');
     }
 }

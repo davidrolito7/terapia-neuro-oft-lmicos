@@ -1,10 +1,9 @@
 <script setup>
 </script>
-
 <template>
     <div
         class="relative flex min-h-screen overflow-hidden"
-        style="background-image: url('https://neuro-rehabilitacion-visual-jgm.com/img/fondo.jpeg'); background-size: cover; background-position: center;"
+        style="background-image: url('/img/fondo.jpeg'); background-size: cover; background-position: center;"
     >
         <!-- Máscara oscura -->
         <div class="absolute inset-0 bg-black/65 backdrop-blur-[2px]"></div>
@@ -16,7 +15,7 @@
             <div class="hidden lg:flex flex-1 items-center justify-center">
                 <div class="overflow-hidden" style="width: 300px; height: 300px;">
                     <img
-                        src="https://neuro-rehabilitacion-visual-jgm.com/img/logo1.png"
+                        src="/img/logo1.png"
                         alt="Logo"
                         class="w-full h-full object-contain scale-[1.35]"
                     />
@@ -32,8 +31,20 @@
                 </div>
             </div>
 
-            <!-- Columna derecha — Aviso -->
-            <div class="hidden lg:flex flex-1 items-center justify-center">
+            <!-- Columna derecha — Logo2 + Aviso -->
+            <div class="hidden lg:flex flex-1 flex-col items-center justify-center gap-5">
+
+                <!-- Logo 2 — contenedor recorta el espacio transparente inferior -->
+  <div style="width: 240px; height: 120px; ">                           
+      <img                                                                               
+          src="/img/logo2.png"
+          alt="Logo 2"                                                                   
+          class="w-full object-contain object-top drop-shadow-lg"
+          style="height: 450px; margin-top: -60px;"
+      />                                                                                 
+  </div>
+
+                <!-- Aviso -->
                 <div class="max-w-xs rounded-xl border border-amber-400/30 bg-amber-500/10 backdrop-blur-sm px-6 py-5">
                     <div class="flex gap-3">
                         <span class="text-amber-400 text-xl leading-none mt-0.5 shrink-0">⚠️</span>

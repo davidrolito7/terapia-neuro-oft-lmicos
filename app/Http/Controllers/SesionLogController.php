@@ -20,6 +20,11 @@ class SesionLogController extends Controller
             return redirect()->back();
         }
 
+        $validated = $request->validate([
+            'calificacion'  => ['nullable', 'in:bueno,regular,malo'],
+            'observaciones' => ['nullable', 'string', 'max:1000'],
+        ]);
+
         $sesionActiva = SesionEjercicio::where('paciente_id', $paciente->id)
             ->whereNotNull('plan_ejercicio_id')
             ->whereHas('planEjercicio', fn ($q) => $q->where('activo', true))
@@ -28,8 +33,11 @@ class SesionLogController extends Controller
 
         if ($sesionActiva) {
             LogSesion::create([
-                'paciente_id'       => $paciente->id,
-                'plan_ejercicio_id' => $sesionActiva->plan_ejercicio_id,
+                'paciente_id'         => $paciente->id,
+                'plan_ejercicio_id'   => $sesionActiva->plan_ejercicio_id,
+                'sesion_ejercicio_id' => $sesionActiva->id,
+                'calificacion'        => $validated['calificacion'] ?? null,
+                'observaciones'       => $validated['observaciones'] ?? null,
             ]);
         }
 

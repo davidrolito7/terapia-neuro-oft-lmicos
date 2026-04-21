@@ -93,6 +93,78 @@ class ExerciseSessionForm
                             }),
                     ]),
 
+                // ── Historial de sesiones completadas ────────────────────────
+                Section::make('Historial de sesiones completadas')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->visible(fn ($record) => $record !== null)
+                    ->schema([
+                        Placeholder::make('historial_logs')
+                            ->label('')
+                            ->content(function ($record) {
+                                if (! $record) return '';
+
+                                $logs = \App\Models\LogSesion::where('sesion_ejercicio_id', $record->id)
+                                    ->orderBy('created_at', 'desc')
+                                    ->get();
+
+                                if ($logs->isEmpty()) {
+                                    return new HtmlString('
+                                        <div style="display:flex;align-items:center;gap:8px;padding:16px 0;color:#94a3b8;font-size:13px;">
+                                            <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                            El paciente aún no ha completado ninguna sesión.
+                                        </div>
+                                    ');
+                                }
+
+                                $calBadge = function (string|null $cal): string {
+                                    return match ($cal) {
+                                        'bueno'   => '<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(34,197,94,0.15);color:#22c55e;">😄 Bien</span>',
+                                        'regular' => '<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(245,158,11,0.15);color:#f59e0b;">😐 Regular</span>',
+                                        'malo'    => '<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(239,68,68,0.15);color:#ef4444;">😞 Mal</span>',
+                                        default   => '<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(148,163,184,0.15);color:#94a3b8;">—</span>',
+                                    };
+                                };
+
+                                $rows = $logs->map(function ($log, $i) use ($calBadge) {
+                                    $fecha = $log->created_at->format('d/m/Y H:i');
+                                    $badge = $calBadge($log->calificacion);
+                                    $obs   = $log->observaciones
+                                        ? '<span style="font-size:12px;color:#cbd5e1;">' . e($log->observaciones) . '</span>'
+                                        : '<span style="font-size:12px;color:#475569;">—</span>';
+                                    $bg = $i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02);';
+                                    $num = $i + 1;
+
+                                    return "
+                                    <tr style='{$bg}'>
+                                        <td style='padding:10px 12px;width:32px;'>
+                                            <span style='display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(99,102,241,0.15);color:#818cf8;font-size:11px;font-weight:700;'>{$num}</span>
+                                        </td>
+                                        <td style='padding:10px 12px;font-size:12px;color:#94a3b8;white-space:nowrap;'>{$fecha}</td>
+                                        <td style='padding:10px 12px;'>{$badge}</td>
+                                        <td style='padding:10px 12px;'>{$obs}</td>
+                                    </tr>";
+                                })->join('');
+
+                                return new HtmlString("
+                                    <div style='border-radius:8px;overflow:hidden;border:1px solid rgba(148,163,184,0.15);'>
+                                        <table style='width:100%;border-collapse:collapse;'>
+                                            <thead>
+                                                <tr style='background:rgba(99,102,241,0.08);'>
+                                                    <th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;width:32px;'>#</th>
+                                                    <th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;'>Fecha</th>
+                                                    <th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;'>Calificación</th>
+                                                    <th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;'>Observaciones del paciente</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody style='border-top:1px solid rgba(148,163,184,0.1);'>
+                                                {$rows}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ");
+                            }),
+                    ]),
+
                 // ── Asignación ────────────────────────────────────────────────
                 Section::make('Asignación')
                     ->icon('heroicon-o-user-circle')

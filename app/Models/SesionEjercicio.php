@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SesionEjercicio extends Model
 {
@@ -71,5 +72,10 @@ class SesionEjercicio extends Model
     public function planEjercicio(): BelongsTo
     {
         return $this->belongsTo(PlanEjercicio::class, 'plan_ejercicio_id');
+    }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(LogSesion::class, 'sesion_ejercicio_id');
     }
 }

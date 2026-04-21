@@ -4,6 +4,7 @@ import { Maximize2, Minimize2, Pause, Play, RotateCcw, Square } from 'lucide-vue
 
 const props = defineProps({
     sequenceMode: { type: Boolean, default: false },
+    fillParent:   { type: Boolean, default: false },
 });
 
 const { config, engine } = inject('exercise');
@@ -93,9 +94,9 @@ const durationLabel = computed(() => config.duration === 0 ? '∞' : formatTime(
     -->
     <div
         ref="wrapperRef"
-        class="relative w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-700"
-        :class="{ '!rounded-none !border-0': isFullscreen }"
-        style="height: max(420px, min(60vh, 680px))"
+        class="relative w-full overflow-hidden bg-slate-900"
+        :class="fillParent ? 'h-full rounded-none border-0' : 'rounded-xl border border-slate-700'"
+        :style="fillParent ? '' : 'height: max(420px, min(60vh, 680px))'"
     >
         <!-- Canvas local: ref="myCanvas" (sin ambigüedad de auto-unwrap) -->
         <canvas ref="myCanvas" class="absolute inset-0 w-full h-full block" />

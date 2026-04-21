@@ -21,7 +21,8 @@
       "Bash(php -r ':*)",
       "Bash(node -e ':*)",
       "Bash(npm uninstall:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(ls /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.mp4 /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.webm /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.mov /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.avi)"
     ]
   }
 }
