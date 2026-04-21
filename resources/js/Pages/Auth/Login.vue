@@ -34,21 +34,21 @@ const submit = () => {
         </div>
 
         <div class="mb-6 text-center">
-            <h1 class="text-xl font-semibold text-white">
+            <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
                 Inicia sesión en tu centro de terapia
             </h1>
-            <p class="text-sm text-white/60 mt-1">
+            <p class="text-sm text-gray-600 dark:text-white/60 mt-1">
                 Ingresa con tu número de teléfono y fecha de nacimiento
             </p>
         </div>
 
         <form @submit.prevent="submit">
             <div>
-                <label class="block text-sm font-medium text-white/80">Teléfono</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-white/80">Teléfono</label>
                 <TextInput
                     id="telefono"
                     type="tel"
-                    class="mt-1 block w-full bg-white/10 border-white/20 text-white placeholder-white/40 focus:border-white/60 focus:ring-white/30"
+                    class="mt-1 block w-full bg-white dark:bg-white/10 border-gray-300 dark:border-white/20 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/40 focus:border-blue-500 dark:focus:border-white/60 focus:ring-blue-500 dark:focus:ring-white/30"
                     v-model="form.telefono"
                     required
                     autofocus
@@ -58,11 +58,11 @@ const submit = () => {
             </div>
 
             <div class="mt-4">
-                <label class="block text-sm font-medium text-white/80">Fecha de nacimiento</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-white/80">Fecha de nacimiento</label>
                 <TextInput
                     id="fecha_nacimiento"
                     type="date"
-                    class="mt-1 block w-full bg-white/10 border-white/20 text-white focus:border-white/60 focus:ring-white/30"
+                    class="mt-1 block w-full bg-white dark:bg-white/10 border-gray-300 dark:border-white/20 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-white/60 focus:ring-blue-500 dark:focus:ring-white/30"
                     v-model="form.fecha_nacimiento"
                     required
                 />
