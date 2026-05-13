@@ -116,6 +116,35 @@ class ExerciseSessionForm
                                     ');
                                 }
 
+                                $tipoNombres = [
+                                    'circular'     => 'Circular',
+                                    'circular_ccw' => 'Circular inverso',
+                                    'horizontal'   => 'Horizontal',
+                                    'vertical'     => 'Vertical',
+                                    'vertical_rev' => 'Vertical inverso',
+                                    'diagonal'     => 'Diagonal ↖↘',
+                                    'diagonal_tr'  => 'Diagonal ↗↙',
+                                    'triangular'   => 'Triangular',
+                                    'square'       => 'Cuadrado',
+                                    'figure8'      => 'Figura 8',
+                                    'figure8_ccw'  => 'Figura 8 inverso',
+                                    'figure8_v'    => 'Figura 8 horizontal',
+                                    'spiral'       => 'Espiral',
+                                    'zigzag'       => 'Zigzag',
+                                    'saccade'      => 'Sacádico',
+                                    'spring'       => 'Resorte',
+                                    'particles'    => 'Puntos aleatorios',
+                                    'bee_h'        => 'Abeja horizontal',
+                                    'bee_v'        => 'Abeja vertical',
+                                    'wave_h'       => 'Arco de onda',
+                                    'wave_h_inv'   => 'Arco de onda invertido',
+                                    'pentagon'     => 'Pentágono',
+                                    'hexagon'      => 'Hexágono',
+                                    'arrow_bi'     => 'Flecha bidireccional',
+                                    'cruz'         => 'Cruz (+)',
+                                    'equis'        => 'Equis (×)',
+                                ];
+
                                 $calBadge = function (string|null $cal): string {
                                     return match ($cal) {
                                         'bueno'   => '<span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(34,197,94,0.15);color:#22c55e;">😄 Bien</span>',
@@ -125,35 +154,75 @@ class ExerciseSessionForm
                                     };
                                 };
 
-                                $rows = $logs->map(function ($log, $i) use ($calBadge) {
-                                    $fecha = $log->created_at->format('d/m/Y H:i');
-                                    $badge = $calBadge($log->calificacion);
-                                    $obs   = $log->observaciones
-                                        ? '<span style="font-size:12px;color:#cbd5e1;">' . e($log->observaciones) . '</span>'
+                                $siBadge = fn (bool|null $v, string $si = 'Sí', string $no = 'No'): string => match ($v) {
+                                    true  => "<span style='display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(34,197,94,0.15);color:#22c55e;'>{$si}</span>",
+                                    false => "<span style='display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(239,68,68,0.15);color:#ef4444;'>{$no}</span>",
+                                    default => '<span style="font-size:12px;color:#475569;">—</span>',
+                                };
+
+                                $rows = $logs->map(function ($log, $i) use ($calBadge, $siBadge, $tipoNombres) {
+                                    $fecha     = $log->created_at->format('d/m/Y H:i');
+                                    $badge     = $calBadge($log->calificacion);
+                                    $ardio     = $siBadge($log->ardio_ojo);
+                                    $masEj     = $siBadge($log->mas_ejercicios);
+                                    $siguio    = $siBadge($log->siguio_todos_objetos);
+                                    $noSiguio  = $log->ejercicio_no_siguio
+                                        ? '<span style="font-size:11px;color:#f59e0b;">' . e($tipoNombres[$log->ejercicio_no_siguio] ?? $log->ejercicio_no_siguio) . '</span>'
                                         : '<span style="font-size:12px;color:#475569;">—</span>';
-                                    $bg = $i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02);';
+                                    $orden     = $log->orden_objetos
+                                        ? '<span style="font-size:11px;color:#cbd5e1;">' . e($log->orden_objetos) . '</span>'
+                                        : '<span style="font-size:12px;color:#475569;">—</span>';
+                                    $cansancio = $log->cansancio_vista !== null
+                                        ? (function (int $v): string {
+                                            [$color] = match (true) {
+                                                $v <= 3 => ['#22c55e'],
+                                                $v <= 6 => ['#f59e0b'],
+                                                default => ['#ef4444'],
+                                            };
+                                            return "<span style='display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:{$color}22;border:1px solid {$color}66;font-size:11px;font-weight:700;color:{$color};'>{$v}</span>";
+                                        })((int) $log->cansancio_vista)
+                                        : '<span style="font-size:12px;color:#475569;">—</span>';
+                                    $obs       = $log->observaciones
+                                        ? '<span style="font-size:11px;color:#cbd5e1;">' . e($log->observaciones) . '</span>'
+                                        : '<span style="font-size:12px;color:#475569;">—</span>';
+                                    $bg  = $i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02);';
                                     $num = $i + 1;
 
                                     return "
                                     <tr style='{$bg}'>
-                                        <td style='padding:10px 12px;width:32px;'>
-                                            <span style='display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(99,102,241,0.15);color:#818cf8;font-size:11px;font-weight:700;'>{$num}</span>
+                                        <td style='padding:8px 10px;width:28px;vertical-align:top;'>
+                                            <span style='display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(99,102,241,0.15);color:#818cf8;font-size:10px;font-weight:700;'>{$num}</span>
                                         </td>
-                                        <td style='padding:10px 12px;font-size:12px;color:#94a3b8;white-space:nowrap;'>{$fecha}</td>
-                                        <td style='padding:10px 12px;'>{$badge}</td>
-                                        <td style='padding:10px 12px;'>{$obs}</td>
+                                        <td style='padding:8px 10px;font-size:11px;color:#94a3b8;white-space:nowrap;vertical-align:top;'>{$fecha}</td>
+                                        <td style='padding:8px 10px;vertical-align:top;'>{$badge}</td>
+                                        <td style='padding:8px 10px;vertical-align:top;'>{$ardio}</td>
+                                        <td style='padding:8px 10px;vertical-align:top;'>{$masEj}</td>
+                                        <td style='padding:8px 10px;vertical-align:top;'>
+                                            {$siguio}
+                                            <div style='margin-top:3px;'>{$noSiguio}</div>
+                                        </td>
+                                        <td style='padding:8px 10px;vertical-align:top;max-width:160px;'>{$orden}</td>
+                                        <td style='padding:8px 10px;vertical-align:top;text-align:center;'>{$cansancio}</td>
+                                        <td style='padding:8px 10px;vertical-align:top;max-width:180px;'>{$obs}</td>
                                     </tr>";
                                 })->join('');
 
+                                $th = fn (string $label): string => "<th style='padding:7px 10px;text-align:left;font-size:10px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;'>{$label}</th>";
+
                                 return new HtmlString("
-                                    <div style='border-radius:8px;overflow:hidden;border:1px solid rgba(148,163,184,0.15);'>
-                                        <table style='width:100%;border-collapse:collapse;'>
+                                    <div style='border-radius:8px;overflow:auto;border:1px solid rgba(148,163,184,0.15);'>
+                                        <table style='width:100%;border-collapse:collapse;min-width:700px;'>
                                             <thead>
                                                 <tr style='background:rgba(99,102,241,0.08);'>
-                                                    <th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;width:32px;'>#</th>
-                                                    <th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;'>Fecha</th>
-                                                    <th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;'>Calificación</th>
-                                                    <th style='padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;'>Observaciones del paciente</th>
+                                                    {$th('#')}
+                                                    {$th('Fecha')}
+                                                    {$th('Calificación')}
+                                                    {$th('Ardió ojo')}
+                                                    {$th('Más ejercicios')}
+                                                    {$th('Siguió objetos')}
+                                                    {$th('Orden objetos')}
+                                                    {$th('Cansancio')}
+                                                    {$th('Observaciones')}
                                                 </tr>
                                             </thead>
                                             <tbody style='border-top:1px solid rgba(148,163,184,0.1);'>

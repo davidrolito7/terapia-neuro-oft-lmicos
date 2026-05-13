@@ -22,7 +22,12 @@
       "Bash(node -e ':*)",
       "Bash(npm uninstall:*)",
       "Bash(git:*)",
-      "Bash(ls /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.mp4 /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.webm /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.mov /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.avi)"
+      "Bash(ls /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.mp4 /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.webm /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.mov /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/public/*.avi)",
+      "Bash(npm install *)",
+      "Bash(xargs ls -la)",
+      "Bash(sed -i '' '443s/return this\\\\.walkPath/return this.walkPathBounce/' /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/resources/views/filament/forms/components/canvas-preview.blade.php)",
+      "Bash(sed -i '' '488s/return this\\\\.walkPath/return this.walkPathBounce/' /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/resources/views/filament/forms/components/canvas-preview.blade.php)",
+      "Bash(sed -i '' '541s/return this\\\\.walkPath/return this.walkPathBounce/' /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/resources/views/filament/forms/components/canvas-preview.blade.php)"
     ]
   }
 }

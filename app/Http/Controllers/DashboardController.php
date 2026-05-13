@@ -6,18 +6,17 @@ use App\Models\LogSesion;
 use App\Models\ProgresoEjercicio;
 use App\Models\SesionEjercicio;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $user     = $request->user();
         $paciente = $user->paciente;
 
         if (! $paciente) {
-            return Inertia::render('Dashboard', [
+            return view('dashboard', [
                 'plan'          => null,
                 'ejercicios'    => [],
                 'porcentaje'    => 0,
@@ -35,7 +34,7 @@ class DashboardController extends Controller
         $plan = $sesionActiva?->planEjercicio()->with('ejercicios')->first();
 
         if (! $plan) {
-            return Inertia::render('Dashboard', [
+            return view('dashboard', [
                 'plan'          => null,
                 'ejercicios'    => [],
                 'porcentaje'    => 0,
@@ -72,7 +71,7 @@ class DashboardController extends Controller
         // Pasar la sesión ya encontrada para evitar queries inconsistentes
         $proximaSesion = $this->calcularProximaSesion($paciente->id, $sesionActiva);
 
-        return Inertia::render('Dashboard', [
+        return view('dashboard', [
             'plan'          => ['id' => $plan->id, 'nombre' => $plan->nombre],
             'ejercicios'    => $ejercicios->values(),
             'porcentaje'    => $porcentaje,

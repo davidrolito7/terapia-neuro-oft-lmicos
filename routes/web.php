@@ -6,9 +6,7 @@ use App\Http\Controllers\ExercisesController;
 use App\Http\Controllers\ExerciseProgressController;
 use App\Http\Controllers\SesionLogController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
     return redirect()->route('login');

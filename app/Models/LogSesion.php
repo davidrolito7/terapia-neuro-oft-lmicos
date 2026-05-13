@@ -15,6 +15,18 @@ class LogSesion extends Model
         'sesion_ejercicio_id',
         'calificacion',
         'observaciones',
+        'ardio_ojo',
+        'mas_ejercicios',
+        'siguio_todos_objetos',
+        'ejercicio_no_siguio',
+        'orden_objetos',
+        'cansancio_vista',
+    ];
+
+    protected $casts = [
+        'ardio_ojo'             => 'boolean',
+        'mas_ejercicios'        => 'boolean',
+        'siguio_todos_objetos'  => 'boolean',
     ];
 
     public function paciente(): BelongsTo

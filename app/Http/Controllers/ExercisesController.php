@@ -7,12 +7,11 @@ use App\Models\ProgresoEjercicio;
 use App\Models\SesionEjercicio;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 class ExercisesController extends Controller
 {
-    public function index(Request $request): Response|RedirectResponse
+    public function index(Request $request): View|RedirectResponse
     {
         $paciente = $request->user()->paciente;
 
@@ -60,7 +59,7 @@ class ExercisesController extends Controller
             }
         }
 
-        return Inertia::render('Exercises/Index', ['planItems' => $ejercicios]);
+        return view('exercises.index', ['planItems' => $ejercicios]);
     }
 
     /**
