@@ -638,6 +638,7 @@
                         const p = this.computePos(w, h, cfg, (i / steps) * period);
                         i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
                     }
+                    ctx.closePath();
                     ctx.strokeStyle = cfg.color + '28';
                     ctx.lineWidth = 1.5;
                     ctx.stroke();

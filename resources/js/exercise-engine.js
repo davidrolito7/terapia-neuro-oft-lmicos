@@ -458,6 +458,7 @@ export function createExerciseEngine(getConfig, onStateChange) {
             const p = computePosition((i / steps) * period);
             i === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y);
         }
+        g.closePath();
         g.strokeStyle = cfg().color + '28';
         g.lineWidth = 1.5;
         g.stroke();
