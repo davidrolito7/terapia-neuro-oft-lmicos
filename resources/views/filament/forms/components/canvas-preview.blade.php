@@ -224,21 +224,34 @@
 
                 // ── Helpers para figuras poligonales ─────────────────────────────
                 walkPath(v, t, sf) {
-                    const n = v.length, TAU = Math.PI * 2;
-                    const cycle = (t * sf) % TAU, segLen = TAU / n;
-                    const side = Math.min(Math.floor(cycle / segLen), n - 1), frac = (cycle % segLen) / segLen;
-                    const a = v[side], b = v[(side + 1) % n];
-                    return { x: a.x + (b.x - a.x) * frac, y: a.y + (b.y - a.y) * frac };
+                    const n = v.length,
+                        TAU = Math.PI * 2;
+                    const cycle = (t * sf) % TAU,
+                        segLen = TAU / n;
+                    const side = Math.min(Math.floor(cycle / segLen), n - 1),
+                        frac = (cycle % segLen) / segLen;
+                    const a = v[side],
+                        b = v[(side + 1) % n];
+                    return {
+                        x: a.x + (b.x - a.x) * frac,
+                        y: a.y + (b.y - a.y) * frac
+                    };
                 },
 
                 walkPathBounce(v, t, sf) {
-                    const n = v.length, TAU = Math.PI * 2;
+                    const n = v.length,
+                        TAU = Math.PI * 2;
                     const tNorm = (t * sf) % (TAU * 2);
                     const cycle = tNorm <= TAU ? tNorm : TAU * 2 - tNorm;
                     const segLen = TAU / n;
-                    const side = Math.min(Math.floor(cycle / segLen), n - 1), frac = (cycle % segLen) / segLen;
-                    const a = v[side], b = v[(side + 1) % n];
-                    return { x: a.x + (b.x - a.x) * frac, y: a.y + (b.y - a.y) * frac };
+                    const side = Math.min(Math.floor(cycle / segLen), n - 1),
+                        frac = (cycle % segLen) / segLen;
+                    const a = v[side],
+                        b = v[(side + 1) % n];
+                    return {
+                        x: a.x + (b.x - a.x) * frac,
+                        y: a.y + (b.y - a.y) * frac
+                    };
                 },
 
                 regularPoly(n, cx, cy, r) {
@@ -618,30 +631,67 @@
                 // ── Ghost path ────────────────────────────────────────────────────
                 drawGhostPath(ctx, w, h, cfg) {
                     // Tipos basados en estado no muestran trayectoria fantasma
-                    if (['saccade', 'zigzag', 'particles'].includes(cfg.exerciseType)) return;
+                    if (['saccade', 'zigzag', 'particles'].includes(cfg.exerciseType)) {
+                        return;
+                    }
 
                     const sf = this.sf(cfg);
 
                     const isBee = ['bee_h', 'bee_v'].includes(cfg.exerciseType);
                     const isSpiral = cfg.exerciseType === 'spiral';
+
                     const period = isBee ?
-                        (Math.PI * 4) / Math.max(0.01, sf) // ida y vuelta completa
-                        :
+                        (Math.PI * 4) / Math.max(0.01, sf) :
                         isSpiral ?
                         (Math.PI * 2) / Math.max(0.01, sf * 0.25) :
                         (Math.PI * 2) / Math.max(0.01, sf);
-                    const steps = isBee ? 800 : isSpiral ? 600 : 120;
+
+                    const complexShapes = ['cruz', 'equis'];
+
+                    const steps = complexShapes.includes(cfg.exerciseType) ?
+                        Math.floor(700 * sf) :
+                        isBee ?
+                        800 :
+                        isSpiral ?
+                        600 :
+                        Math.floor(220 * sf);
 
                     ctx.save();
+
+                    // Ayuda a que las líneas sean más uniformes
+                    ctx.translate(0.5, 0.5);
+
                     ctx.beginPath();
+
                     for (let i = 0; i <= steps; i++) {
-                        const p = this.computePos(w, h, cfg, (i / steps) * period);
-                        i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+                        const p = this.computePos(
+                            w,
+                            h,
+                            cfg,
+                            (i / steps) * period
+                        );
+
+                        if (i === 0) {
+                            ctx.moveTo(p.x, p.y);
+                        } else {
+                            ctx.lineTo(p.x, p.y);
+                        }
                     }
-                    ctx.closePath();
+
+                    // NO cerrar cruz/equis porque genera líneas extra
+                    if (!complexShapes.includes(cfg.exerciseType)) {
+                        ctx.closePath();
+                    }
+
                     ctx.strokeStyle = cfg.color + '28';
                     ctx.lineWidth = 1.5;
+
+                    // Mejora visual
+                    ctx.lineJoin = 'round';
+                    ctx.lineCap = 'round';
+
                     ctx.stroke();
+
                     ctx.restore();
                 },
 

@@ -1,10 +1,3 @@
-/**
- * Pure vanilla-JS exercise animation engine.
- * Ported from useExerciseEngine.js (Vue composable).
- *
- * @param {() => object} getConfig - Returns current config object
- * @param {(state: string, elapsed: number) => void} onStateChange - Called on state or elapsed change
- */
 export function createExerciseEngine(getConfig, onStateChange) {
     let state = 'idle'; // idle | countdown | running | paused | stopped
     let elapsedSeconds = 0;
@@ -109,13 +102,9 @@ export function createExerciseEngine(getConfig, onStateChange) {
                 const p = tNorm <= TAU ? tNorm : TAU * 2 - tNorm;
                 const progress = p / TAU;
                 const centerX = cx - ex + progress * ex * 2;
-                const r = ey * 0.35;
-                return {
-                    x: centerX + Math.cos(p * loops) * r,
-                    y: cy + Math.sin(p * loops) * r
-                };
+                const rr = ey * 0.35;
+                return { x: centerX + Math.cos(p * loops) * rr, y: cy + Math.sin(p * loops) * rr };
             }
-
             case 'bee_v': {
                 const loops = 5;
                 const TAU = Math.PI * 2;
@@ -123,11 +112,8 @@ export function createExerciseEngine(getConfig, onStateChange) {
                 const p = tNorm <= TAU ? tNorm : TAU * 2 - tNorm;
                 const progress = p / TAU;
                 const centerY = cy - ey + progress * ey * 2;
-                const r = ex * 0.35;
-                return {
-                    x: cx + Math.sin(p * loops) * r,
-                    y: centerY + Math.cos(p * loops) * r
-                };
+                const rr = ex * 0.35;
+                return { x: cx + Math.sin(p * loops) * rr, y: centerY + Math.cos(p * loops) * rr };
             }
             case 'wave_h': {
                 const tri = Math.asin(Math.sin(t * sf)) / (Math.PI / 2);
@@ -151,160 +137,52 @@ export function createExerciseEngine(getConfig, onStateChange) {
             case 'pentagon': return walkPath(regularPoly(5, cx, cy, r), t, sf);
             case 'hexagon': return walkPath(regularPoly(6, cx, cy, r), t, sf);
             case 'arrow_bi': {
-                const aw = ex * 0.3,
-                    bh = ey * 0.32;
-                return walkPath([{
-                    x: cx - ex,
-                    y: cy
-                },
-                {
-                    x: cx - ex + aw,
-                    y: cy - ey
-                },
-                {
-                    x: cx - ex + aw,
-                    y: cy - bh
-                },
-                {
-                    x: cx + ex - aw,
-                    y: cy - bh
-                },
-                {
-                    x: cx + ex - aw,
-                    y: cy - ey
-                },
-                {
-                    x: cx + ex,
-                    y: cy
-                },
-                {
-                    x: cx + ex - aw,
-                    y: cy + ey
-                },
-                {
-                    x: cx + ex - aw,
-                    y: cy + bh
-                },
-                {
-                    x: cx - ex + aw,
-                    y: cy + bh
-                },
-                {
-                    x: cx - ex + aw,
-                    y: cy + ey
-                },
+                const aw = ex * 0.3, bh = ey * 0.32;
+                return walkPath([
+                    { x: cx - ex, y: cy },
+                    { x: cx - ex + aw, y: cy - ey },
+                    { x: cx - ex + aw, y: cy - bh },
+                    { x: cx + ex - aw, y: cy - bh },
+                    { x: cx + ex - aw, y: cy - ey },
+                    { x: cx + ex, y: cy },
+                    { x: cx + ex - aw, y: cy + ey },
+                    { x: cx + ex - aw, y: cy + bh },
+                    { x: cx - ex + aw, y: cy + bh },
+                    { x: cx - ex + aw, y: cy + ey },
                 ], t, sf);
             }
             case 'cruz': {
-                const tw = ex * 0.3,
-                    th = ey * 0.3;
-                return walkPath([{
-                    x: cx - tw,
-                    y: cy - ey
-                },
-                {
-                    x: cx + tw,
-                    y: cy - ey
-                },
-                {
-                    x: cx + tw,
-                    y: cy - th
-                },
-                {
-                    x: cx + ex,
-                    y: cy - th
-                },
-                {
-                    x: cx + ex,
-                    y: cy + th
-                },
-                {
-                    x: cx + tw,
-                    y: cy + th
-                },
-                {
-                    x: cx + tw,
-                    y: cy + ey
-                },
-                {
-                    x: cx - tw,
-                    y: cy + ey
-                },
-                {
-                    x: cx - tw,
-                    y: cy + th
-                },
-                {
-                    x: cx - ex,
-                    y: cy + th
-                },
-                {
-                    x: cx - ex,
-                    y: cy - th
-                },
-                {
-                    x: cx - tw,
-                    y: cy - th
-                },
+                const tw = ex * 0.3, th = ey * 0.3;
+                return walkPath([
+                    { x: cx - tw, y: cy - ey },
+                    { x: cx + tw, y: cy - ey },
+                    { x: cx + tw, y: cy - th },
+                    { x: cx + ex, y: cy - th },
+                    { x: cx + ex, y: cy + th },
+                    { x: cx + tw, y: cy + th },
+                    { x: cx + tw, y: cy + ey },
+                    { x: cx - tw, y: cy + ey },
+                    { x: cx - tw, y: cy + th },
+                    { x: cx - ex, y: cy + th },
+                    { x: cx - ex, y: cy - th },
+                    { x: cx - tw, y: cy - th },
                 ], t, sf);
             }
             case 'equis': {
-                const w = Math.min(ex, ey) * 0.28;
-
-                return walkPath([{
-                    x: cx - ex,
-                    y: cy - ey + w
-                },
-                {
-                    x: cx - ex + w,
-                    y: cy - ey
-                },
-
-                {
-                    x: cx,
-                    y: cy - w
-                },
-                {
-                    x: cx + ex - w,
-                    y: cy - ey
-                },
-
-                {
-                    x: cx + ex,
-                    y: cy - ey + w
-                },
-                {
-                    x: cx + w,
-                    y: cy
-                },
-
-                {
-                    x: cx + ex,
-                    y: cy + ey - w
-                },
-                {
-                    x: cx + ex - w,
-                    y: cy + ey
-                },
-
-                {
-                    x: cx,
-                    y: cy + w
-                },
-                {
-                    x: cx - ex + w,
-                    y: cy + ey
-                },
-
-                {
-                    x: cx - ex,
-                    y: cy + ey - w
-                },
-                {
-                    x: cx - w,
-                    y: cy
-                },
-
+                const ew = Math.min(ex, ey) * 0.28;
+                return walkPath([
+                    { x: cx - ex,      y: cy - ey + ew },
+                    { x: cx - ex + ew, y: cy - ey      },
+                    { x: cx,           y: cy - ew       },
+                    { x: cx + ex - ew, y: cy - ey      },
+                    { x: cx + ex,      y: cy - ey + ew },
+                    { x: cx + ew,      y: cy            },
+                    { x: cx + ex,      y: cy + ey - ew },
+                    { x: cx + ex - ew, y: cy + ey      },
+                    { x: cx,           y: cy + ew       },
+                    { x: cx - ex + ew, y: cy + ey      },
+                    { x: cx - ex,      y: cy + ey - ew },
+                    { x: cx - ew,      y: cy            },
                 ], t, sf);
             }
             default: return { x: cx, y: cy };
@@ -445,12 +323,19 @@ export function createExerciseEngine(getConfig, onStateChange) {
         const sf = speedFactor();
         const isBee = ['bee_h', 'bee_v'].includes(type);
         const isSpiral = type === 'spiral';
+        const isComplex = ['cruz', 'equis'].includes(type);
+
         const period = isBee ?
             (Math.PI * 4) / Math.max(0.01, sf) :
             isSpiral ?
             (Math.PI * 2) / Math.max(0.01, sf * 0.25) :
             (Math.PI * 2) / Math.max(0.01, sf);
-        const steps = isBee ? 800 : isSpiral ? 600 : 120;
+
+        const steps = isComplex ?
+            Math.floor(700 * sf) :
+            isBee ? 800 :
+            isSpiral ? 600 :
+            120;
 
         g.save();
         g.beginPath();
@@ -458,7 +343,8 @@ export function createExerciseEngine(getConfig, onStateChange) {
             const p = computePosition((i / steps) * period);
             i === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y);
         }
-        g.closePath();
+        // cruz/equis no se cierran con closePath porque genera líneas extra
+        if (!isComplex) g.closePath();
         g.strokeStyle = cfg().color + '28';
         g.lineWidth = 1.5;
         g.stroke();
@@ -515,7 +401,7 @@ export function createExerciseEngine(getConfig, onStateChange) {
         rafId = requestAnimationFrame(tick);
     }
 
-    // ─── Public controls ─────────────────────────────────────────────────────
+    // ─── Public controls ──────────────────────────────────────────────────────
 
     function start() {
         if (state !== 'idle' && state !== 'stopped') return;
