@@ -187,11 +187,15 @@ class ExercisePlanForm
             'wave_h'       => '〜 Arco de onda horizontal (∩)',
             'wave_h_inv'   => '〜 Arco de onda horizontal invertido (∪)',
             'spring'       => '〰️ Resorte (gusanito)',
-            'bee_h'        => '🐝 Abeja horizontal (loops L↔R)',
-            'bee_v'        => '🐝 Abeja vertical (loops ↑↓)',
-            'zigzag'       => '⚡ Zigzag',
-            'saccade'      => '👁 Sacádico',
-            'particles'    => '✨ Puntos aleatorios',
+            'bee_h'            => '🐝 Abeja horizontal (loops L↔R)',
+            'bee_v'            => '🐝 Abeja vertical (loops ↑↓)',
+            'star_path'        => '⭐ Estrella',
+            'hourglass'        => '⏳ Reloj de arena',
+            'circular_bounce'  => '🔁 Círculo rebote',
+            's_curve'          => '〰 Curva S',
+            'zigzag'           => '⚡ Zigzag',
+            'saccade'          => '👁 Sacádico',
+            'particles'        => '✨ Puntos aleatorios',
         ];
     }
 }

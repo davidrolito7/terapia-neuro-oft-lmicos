@@ -64,7 +64,8 @@
                 // ── Particles state ───────────────────────────────────────────────
                 pt: {
                     items: [],
-                    init: false
+                    init: false,
+                    initSf: 0
                 },
 
                 // ─────────────────────────────────────────────────────────────────
@@ -182,12 +183,14 @@
                 // ── Particles ─────────────────────────────────────────────────────
                 initParticles(w, h, cfg) {
                     const m = cfg.size + 8;
-                    const spd = this.sf(cfg) * 220;
+                    const sf = this.sf(cfg);
+                    const spd = sf * 220;
+                    this.pt.initSf = sf;
                     this.pt.items = Array.from({
-                        length: 5
-                    }, () => {
+                        length: 25
+                    }, (_, i) => {
                         const a = Math.random() * Math.PI * 2;
-                        const s = spd * (0.5 + Math.random() * 0.8);
+                        const s = i === 0 ? spd * 1.5 : spd * (0.4 + Math.random() * 0.4);
                         return {
                             x: this.rnd(m, w - m),
                             y: this.rnd(m, h - m),
@@ -198,6 +201,7 @@
                     this.pt.init = true;
                 },
                 updateParticles(dt, w, h, cfg) {
+                    if (this.pt.init && this.sf(cfg) !== this.pt.initSf) this.pt.init = false;
                     if (!this.pt.init) this.initParticles(w, h, cfg);
                     const m = cfg.size + 8;
                     for (const p of this.pt.items) {
@@ -236,6 +240,26 @@
                         x: a.x + (b.x - a.x) * frac,
                         y: a.y + (b.y - a.y) * frac
                     };
+                },
+
+                // Igual que walkPath pero reparte el tiempo proporcional a la longitud de cada segmento
+                walkPathArc(v, t, sf) {
+                    const n = v.length, TAU = Math.PI * 2;
+                    const lens = Array.from({ length: n }, (_, i) => {
+                        const a = v[i], b = v[(i + 1) % n];
+                        return Math.hypot(b.x - a.x, b.y - a.y);
+                    });
+                    const total = lens.reduce((s, l) => s + l, 0);
+                    const cum = [];
+                    let acc = 0;
+                    for (const l of lens) { acc += l / total; cum.push(acc); }
+                    const progress = ((t * sf) % TAU) / TAU;
+                    let seg = 0;
+                    while (seg < n - 1 && cum[seg] <= progress) seg++;
+                    const segStart = seg === 0 ? 0 : cum[seg - 1];
+                    const frac = (progress - segStart) / (cum[seg] - segStart);
+                    const a = v[seg], b = v[(seg + 1) % n];
+                    return { x: a.x + (b.x - a.x) * frac, y: a.y + (b.y - a.y) * frac };
                 },
 
                 walkPathBounce(v, t, sf) {
@@ -607,6 +631,68 @@
 
                             ], t, sf);
                         }
+                        case 'star_path': {
+                            const outerR = r,
+                                innerR = r * 0.4;
+                            const pts = Array.from({
+                                length: 10
+                            }, (_, i) => {
+                                const angle = -Math.PI / 2 + (Math.PI * 2 * i) / 10;
+                                const rad = i % 2 === 0 ? outerR : innerR;
+                                return {
+                                    x: cx + rad * Math.cos(angle),
+                                    y: cy + rad * Math.sin(angle)
+                                };
+                            });
+                            return this.walkPath(pts, t, sf);
+                        }
+                        case 'hourglass': {
+                            return this.walkPathArc([{
+                                    x: cx - ex,
+                                    y: cy - ey
+                                },
+                                {
+                                    x: cx + ex,
+                                    y: cy - ey
+                                },
+                                {
+                                    x: cx,
+                                    y: cy
+                                },
+                                {
+                                    x: cx + ex,
+                                    y: cy + ey
+                                },
+                                {
+                                    x: cx - ex,
+                                    y: cy + ey
+                                },
+                                {
+                                    x: cx,
+                                    y: cy
+                                },
+                            ], t, sf);
+                        }
+                        case 'circular_bounce': {
+                            const TAU = Math.PI * 2;
+                            const tNorm = (t * sf) % (TAU * 2);
+                            const angle = tNorm <= TAU ? tNorm - Math.PI / 2 : (TAU * 2 - tNorm) - Math.PI / 2;
+                            return {
+                                x: cx + r * Math.cos(angle),
+                                y: cy + r * Math.sin(angle)
+                            };
+                        }
+                        case 's_curve': {
+                            const TAU = Math.PI * 2;
+                            const tNorm = (t * sf) % (TAU * 2);
+                            const tb = tNorm <= TAU ? tNorm : TAU * 2 - tNorm;
+                            if (tb <= Math.PI) {
+                                const p = tb / Math.PI;
+                                return { x: cx - ex + p * ex * 2, y: cy - ey * 0.7 * Math.sin(2 * tb) };
+                            }
+                            const p = (tb - Math.PI) / Math.PI;
+                            return { x: cx + ex - p * ex * 2, y: cy };
+                        }
                         // zigzag, saccade, particles — posición manejada por estado
                         case 'zigzag':
                             return {
@@ -639,8 +725,9 @@
 
                     const isBee = ['bee_h', 'bee_v'].includes(cfg.exerciseType);
                     const isSpiral = cfg.exerciseType === 'spiral';
+                    const isBounce = ['circular_bounce', 's_curve'].includes(cfg.exerciseType);
 
-                    const period = isBee ?
+                    const period = isBee || isBounce ?
                         (Math.PI * 4) / Math.max(0.01, sf) :
                         isSpiral ?
                         (Math.PI * 2) / Math.max(0.01, sf * 0.25) :
@@ -650,7 +737,7 @@
 
                     const steps = complexShapes.includes(cfg.exerciseType) ?
                         Math.floor(700 * sf) :
-                        isBee ?
+                        isBee || isBounce ?
                         800 :
                         isSpiral ?
                         600 :
@@ -786,7 +873,19 @@
                     // Estímulo(s)
                     if (cfg.exerciseType === 'particles') {
                         if (!this.pt.init) this.initParticles(w, h, cfg);
-                        for (const p of this.pt.items) this.drawStimulus(ctx, p.x, p.y, cfg);
+                        const sz = cfg.size;
+                        this.pt.items.forEach((p, i) => {
+                            const color = i === 0 ? '#f472b6' : '#60a5fa';
+                            ctx.save();
+                            const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, sz * 2.5);
+                            grd.addColorStop(0, color + '44');
+                            grd.addColorStop(1, 'transparent');
+                            ctx.beginPath(); ctx.arc(p.x, p.y, sz * 2.5, 0, Math.PI * 2);
+                            ctx.fillStyle = grd; ctx.fill();
+                            ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
+                            ctx.fillStyle = color; ctx.fill();
+                            ctx.restore();
+                        });
                     } else {
                         const pos = this.computePos(w, h, cfg, this.t);
                         this.drawStimulus(ctx, pos.x, pos.y, cfg);
@@ -816,7 +915,8 @@
                     };
                     this.pt = {
                         items: [],
-                        init: false
+                        init: false,
+                        initSf: 0
                     };
                     this.t = 0;
                     this.lastTs = null;

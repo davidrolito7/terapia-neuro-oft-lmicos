@@ -11,8 +11,8 @@ export function createExerciseEngine(getConfig, onStateChange) {
 
     const saccade = { initialized: false, currentPos: { x: 0, y: 0 }, nextPos: { x: 0, y: 0 }, holdRemaining: 0 };
     const zigzag = { x: 0, y: 0, vx: 0, vy: 0, initialized: false, minX: 0, maxX: 0, minY: 0, maxY: 0 };
-    const PARTICLE_COUNT = 5;
-    const particlesState = { initialized: false, items: [] };
+    const PARTICLE_COUNT = 25;
+    const particlesState = { initialized: false, items: [], lastSf: 0 };
 
     function cfg() { return getConfig(); }
     function canvas() { return canvasEl; }
@@ -41,6 +41,26 @@ export function createExerciseEngine(getConfig, onStateChange) {
         const cycle = (t * sf) % TAU, segLen = TAU / n;
         const side = Math.min(Math.floor(cycle / segLen), n - 1), frac = (cycle % segLen) / segLen;
         const a = v[side], b = v[(side + 1) % n];
+        return { x: a.x + (b.x - a.x) * frac, y: a.y + (b.y - a.y) * frac };
+    }
+
+    // Igual que walkPath pero distribuye el tiempo proporcional a la longitud de cada segmento
+    function walkPathArc(v, t, sf) {
+        const n = v.length, TAU = Math.PI * 2;
+        const lens = Array.from({ length: n }, (_, i) => {
+            const a = v[i], b = v[(i + 1) % n];
+            return Math.hypot(b.x - a.x, b.y - a.y);
+        });
+        const total = lens.reduce((s, l) => s + l, 0);
+        const cum = [];
+        let acc = 0;
+        for (const l of lens) { acc += l / total; cum.push(acc); }
+        const progress = ((t * sf) % TAU) / TAU;
+        let seg = 0;
+        while (seg < n - 1 && cum[seg] <= progress) seg++;
+        const segStart = seg === 0 ? 0 : cum[seg - 1];
+        const frac = (progress - segStart) / (cum[seg] - segStart);
+        const a = v[seg], b = v[(seg + 1) % n];
         return { x: a.x + (b.x - a.x) * frac, y: a.y + (b.y - a.y) * frac };
     }
 
@@ -185,6 +205,42 @@ export function createExerciseEngine(getConfig, onStateChange) {
                     { x: cx - ew,      y: cy            },
                 ], t, sf);
             }
+            case 'star_path': {
+                const outerR = r, innerR = r * 0.4;
+                const pts = Array.from({ length: 10 }, (_, i) => {
+                    const angle = -Math.PI / 2 + (Math.PI * 2 * i) / 10;
+                    const rad = i % 2 === 0 ? outerR : innerR;
+                    return { x: cx + rad * Math.cos(angle), y: cy + rad * Math.sin(angle) };
+                });
+                return walkPath(pts, t, sf);
+            }
+            case 'hourglass': {
+                return walkPathArc([
+                    { x: cx - ex, y: cy - ey },
+                    { x: cx + ex, y: cy - ey },
+                    { x: cx,      y: cy      },
+                    { x: cx + ex, y: cy + ey },
+                    { x: cx - ex, y: cy + ey },
+                    { x: cx,      y: cy      },
+                ], t, sf);
+            }
+            case 'circular_bounce': {
+                const TAU = Math.PI * 2;
+                const tNorm = (t * sf) % (TAU * 2);
+                const angle = tNorm <= TAU ? tNorm - Math.PI / 2 : (TAU * 2 - tNorm) - Math.PI / 2;
+                return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+            }
+            case 's_curve': {
+                const TAU = Math.PI * 2;
+                const tNorm = (t * sf) % (TAU * 2);
+                const tb = tNorm <= TAU ? tNorm : TAU * 2 - tNorm;
+                if (tb <= Math.PI) {
+                    const p = tb / Math.PI;
+                    return { x: cx - ex + p * ex * 2, y: cy - ey * 0.7 * Math.sin(2 * tb) };
+                }
+                const p = (tb - Math.PI) / Math.PI;
+                return { x: cx + ex - p * ex * 2, y: cy };
+            }
             default: return { x: cx, y: cy };
         }
     }
@@ -243,9 +299,11 @@ export function createExerciseEngine(getConfig, onStateChange) {
     // ─── Particles ────────────────────────────────────────────────────────────
 
     function initParticles(w, h) {
-        const m = margin(), speed = speedFactor() * 220;
-        particlesState.items = Array.from({ length: PARTICLE_COUNT }, () => {
-            const angle = Math.random() * Math.PI * 2, spd = speed * (0.5 + Math.random() * 0.8);
+        const m = margin(), sf = speedFactor(), speed = sf * 220;
+        particlesState.lastSf = sf;
+        particlesState.items = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
+            const angle = Math.random() * Math.PI * 2;
+            const spd = i === 0 ? speed * 1.5 : speed * (0.4 + Math.random() * 0.4);
             return { x: m + Math.random() * (w - m * 2), y: m + Math.random() * (h - m * 2), vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd };
         });
         particlesState.initialized = true;
@@ -253,6 +311,9 @@ export function createExerciseEngine(getConfig, onStateChange) {
 
     function updateParticles(dt, w, h) {
         if (cfg().exerciseType !== 'particles') return;
+        if (particlesState.initialized && speedFactor() !== particlesState.lastSf) {
+            particlesState.initialized = false;
+        }
         if (!particlesState.initialized) initParticles(w, h);
         const m = margin();
         for (const p of particlesState.items) {
@@ -324,8 +385,9 @@ export function createExerciseEngine(getConfig, onStateChange) {
         const isBee = ['bee_h', 'bee_v'].includes(type);
         const isSpiral = type === 'spiral';
         const isComplex = ['cruz', 'equis'].includes(type);
+        const isBounce = ['circular_bounce', 's_curve'].includes(type);
 
-        const period = isBee ?
+        const period = isBee || isBounce ?
             (Math.PI * 4) / Math.max(0.01, sf) :
             isSpiral ?
             (Math.PI * 2) / Math.max(0.01, sf * 0.25) :
@@ -333,7 +395,7 @@ export function createExerciseEngine(getConfig, onStateChange) {
 
         const steps = isComplex ?
             Math.floor(700 * sf) :
-            isBee ? 800 :
+            isBee || isBounce ? 800 :
             isSpiral ? 600 :
             120;
 
@@ -374,7 +436,19 @@ export function createExerciseEngine(getConfig, onStateChange) {
         drawGhostPath(g);
         if (cfg().exerciseType === 'particles') {
             if (!particlesState.initialized) initParticles(c.width, c.height);
-            for (const p of particlesState.items) drawStimulus(g, p.x, p.y);
+            const size = cfg().size;
+            particlesState.items.forEach((p, i) => {
+                const color = i === 0 ? '#f472b6' : '#60a5fa';
+                g.save();
+                const grd = g.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 2.5);
+                grd.addColorStop(0, color + '44');
+                grd.addColorStop(1, 'transparent');
+                g.beginPath(); g.arc(p.x, p.y, size * 2.5, 0, Math.PI * 2);
+                g.fillStyle = grd; g.fill();
+                g.beginPath(); g.arc(p.x, p.y, size, 0, Math.PI * 2);
+                g.fillStyle = color; g.fill();
+                g.restore();
+            });
         } else {
             const pos = computePosition(elapsedTime);
             drawStimulus(g, pos.x, pos.y);
@@ -407,7 +481,7 @@ export function createExerciseEngine(getConfig, onStateChange) {
         if (state !== 'idle' && state !== 'stopped') return;
         elapsedTime = 0; elapsedSeconds = 0; lastTimestamp = null;
         saccade.initialized = false; zigzag.initialized = false;
-        particlesState.initialized = false; particlesState.items = [];
+        particlesState.initialized = false; particlesState.items = []; particlesState.lastSf = 0;
         const delay = cfg().delay ?? 0;
         if (delay > 0) {
             countdownValue = delay;
@@ -437,7 +511,7 @@ export function createExerciseEngine(getConfig, onStateChange) {
         stop();
         elapsedTime = 0; elapsedSeconds = 0; countdownValue = 0;
         saccade.initialized = false; zigzag.initialized = false;
-        particlesState.initialized = false; particlesState.items = [];
+        particlesState.initialized = false; particlesState.items = []; particlesState.lastSf = 0;
         setState('idle');
         clearCanvas();
     }
