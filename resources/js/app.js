@@ -40,6 +40,11 @@ Alpine.data('exerciseSession', (planItems) => {
         hourglass:         'Reloj de arena',
         circular_bounce:   'Círculo rebote',
         s_curve:           'Curva S',
+        orbit_shapes:      'Órbita de figuras',
+        random_numbers:    'Números aleatorios',
+        dual_bounce:       'Dos figuras rebotando',
+        four_pulse:        'Cuatro puntos (pulso)',
+        zigzag_numbers:    'Zigzag con números',
     };
 
     return {

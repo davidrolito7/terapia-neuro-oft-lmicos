@@ -196,6 +196,11 @@ class ExercisePlanForm
             'zigzag'           => '⚡ Zigzag',
             'saccade'          => '👁 Sacádico',
             'particles'        => '✨ Puntos aleatorios',
+            'orbit_shapes'     => '🔵 Órbita de figuras',
+            'random_numbers'   => '🔢 Números aleatorios',
+            'dual_bounce'      => '🔴 Dos figuras rebotando',
+            'four_pulse'       => '⚫ Cuatro puntos (pulso)',
+            'zigzag_numbers'   => '⚡🔢 Zigzag con números',
         ];
     }
 }

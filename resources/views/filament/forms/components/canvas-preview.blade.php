@@ -39,34 +39,28 @@
                 lastTs: null,
 
                 // ── Zigzag state ──────────────────────────────────────────────────
-                zz: {
-                    x: 0,
-                    y: 0,
-                    vx: 0,
-                    vy: 0,
-                    init: false
-                },
+                zz: { x: 0, y: 0, vx: 0, vy: 0, init: false },
 
                 // ── Saccade state ─────────────────────────────────────────────────
-                sc: {
-                    cur: {
-                        x: 0,
-                        y: 0
-                    },
-                    nxt: {
-                        x: 0,
-                        y: 0
-                    },
-                    hold: 0,
-                    init: false
-                },
+                sc: { cur: { x: 0, y: 0 }, nxt: { x: 0, y: 0 }, hold: 0, init: false },
 
                 // ── Particles state ───────────────────────────────────────────────
-                pt: {
-                    items: [],
-                    init: false,
-                    initSf: 0
-                },
+                pt: { items: [], init: false, initSf: 0 },
+
+                // ── Orbit state ───────────────────────────────────────────────────
+                orb: { init: false, pending: [], visible: [], hold: 0 },
+
+                // ── Random Numbers state ──────────────────────────────────────────
+                nb: { init: false, visible: [], hold: 0 },
+
+                // ── Dual Bounce state ─────────────────────────────────────────────
+                db: { init: false, a: { x: 0, y: 0, vx: 0, vy: 0 }, b: { x: 0, y: 0, vx: 0, vy: 0 } },
+
+                // ── Zigzag Numbers state ──────────────────────────────────────────
+                zn: { init: false, direction: 1, progress: 0, ball: { x: 0, y: 0 }, numbers: [], numTimer: 0 },
+                ZN_ZIGS: 5,
+
+                ORBIT_SHAPES: ['dot', 'triangle', 'square', 'diamond', 'pentagon', 'hexagon', 'star', 'cross'],
 
                 // ─────────────────────────────────────────────────────────────────
 
@@ -714,10 +708,285 @@
                     }
                 },
 
+                // ── Orbit Shapes ──────────────────────────────────────────────────
+                initOrbit(w, h, cfg) {
+                    const { cx, cy, r } = this.extents(w, h, cfg);
+                    const shapes = [...this.ORBIT_SHAPES];
+                    for (let i = shapes.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shapes[i], shapes[j]] = [shapes[j], shapes[i]];
+                    }
+                    const positions = Array.from({ length: 8 }, (_, i) => {
+                        const baseAngle = Math.PI * 2 * i / 8;
+                        const angle = baseAngle + (Math.random() - 0.5) * (Math.PI / 4);
+                        const dist = r * (0.92 + Math.random() * 0.07);
+                        return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle), shape: shapes[i] };
+                    });
+                    for (let i = positions.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [positions[i], positions[j]] = [positions[j], positions[i]];
+                    }
+                    this.orb.pending = positions;
+                    this.orb.visible = [];
+                    this.orb.hold = 2.0 / this.sf(cfg);
+                    this.orb.init = true;
+                },
+                updateOrbit(dt, w, h, cfg) {
+                    if (!this.orb.init) this.initOrbit(w, h, cfg);
+                    this.orb.hold -= dt;
+                    if (this.orb.hold <= 0) {
+                        if (this.orb.pending.length > 0) {
+                            this.orb.visible.push(this.orb.pending.shift());
+                        } else {
+                            this.initOrbit(w, h, cfg);
+                        }
+                        this.orb.hold = 2.0 / this.sf(cfg);
+                    }
+                },
+                drawOrbitShape(ctx, x, y, shape, size, color) {
+                    ctx.save();
+                    switch (shape) {
+                        case 'dot':
+                            ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2);
+                            ctx.fillStyle = color; ctx.fill(); break;
+                        case 'ring':
+                            ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2);
+                            ctx.strokeStyle = color; ctx.lineWidth = Math.max(2, size * 0.25); ctx.stroke(); break;
+                        case 'triangle':
+                            ctx.beginPath();
+                            for (let i = 0; i < 3; i++) {
+                                const a = -Math.PI / 2 + Math.PI * 2 * i / 3;
+                                i === 0 ? ctx.moveTo(x + size * Math.cos(a), y + size * Math.sin(a)) : ctx.lineTo(x + size * Math.cos(a), y + size * Math.sin(a));
+                            }
+                            ctx.closePath(); ctx.fillStyle = color; ctx.fill(); break;
+                        case 'square':
+                            ctx.fillStyle = color;
+                            ctx.fillRect(x - size * 0.8, y - size * 0.8, size * 1.6, size * 1.6); break;
+                        case 'diamond':
+                            ctx.beginPath(); ctx.moveTo(x, y - size); ctx.lineTo(x + size * 0.7, y); ctx.lineTo(x, y + size); ctx.lineTo(x - size * 0.7, y);
+                            ctx.closePath(); ctx.fillStyle = color; ctx.fill(); break;
+                        case 'pentagon':
+                            ctx.beginPath();
+                            for (let i = 0; i < 5; i++) {
+                                const a = -Math.PI / 2 + Math.PI * 2 * i / 5;
+                                i === 0 ? ctx.moveTo(x + size * Math.cos(a), y + size * Math.sin(a)) : ctx.lineTo(x + size * Math.cos(a), y + size * Math.sin(a));
+                            }
+                            ctx.closePath(); ctx.fillStyle = color; ctx.fill(); break;
+                        case 'hexagon':
+                            ctx.beginPath();
+                            for (let i = 0; i < 6; i++) {
+                                const a = Math.PI / 6 + Math.PI * 2 * i / 6;
+                                i === 0 ? ctx.moveTo(x + size * Math.cos(a), y + size * Math.sin(a)) : ctx.lineTo(x + size * Math.cos(a), y + size * Math.sin(a));
+                            }
+                            ctx.closePath(); ctx.fillStyle = color; ctx.fill(); break;
+                        case 'star':
+                            ctx.beginPath();
+                            for (let i = 0; i < 10; i++) {
+                                const a = i * Math.PI / 5 - Math.PI / 2;
+                                const rad = i % 2 === 0 ? size : size * 0.4;
+                                i === 0 ? ctx.moveTo(x + rad * Math.cos(a), y + rad * Math.sin(a)) : ctx.lineTo(x + rad * Math.cos(a), y + rad * Math.sin(a));
+                            }
+                            ctx.closePath(); ctx.fillStyle = color; ctx.fill(); break;
+                        case 'cross': {
+                            const t = Math.max(2, size * 0.28);
+                            ctx.fillStyle = color;
+                            ctx.fillRect(x - size, y - t, size * 2, t * 2);
+                            ctx.fillRect(x - t, y - size, t * 2, size * 2); break;
+                        }
+                    }
+                    ctx.restore();
+                },
+                renderOrbit(ctx, w, h, cfg) {
+                    if (!this.orb.init) this.initOrbit(w, h, cfg);
+                    const size = 28;
+                    const color = cfg.color;
+                    for (const pos of this.orb.visible) {
+                        this.drawOrbitShape(ctx, pos.x, pos.y, pos.shape, size, color);
+                    }
+                    const { cx, cy } = this.extents(w, h, cfg);
+                    this.drawStimulus(ctx, cx, cy, cfg);
+                },
+
+                // ── Random Numbers ────────────────────────────────────────────────
+                getNumberPos(w, h, existing, minDist) {
+                    const pad = 0.09;
+                    for (let attempt = 0; attempt < 25; attempt++) {
+                        const x = (pad + Math.random() * (1 - pad * 2)) * w;
+                        const y = (pad + Math.random() * (1 - pad * 2)) * h;
+                        let ok = true;
+                        for (const e of existing) {
+                            if (Math.hypot(x - e.x, y - e.y) < minDist) { ok = false; break; }
+                        }
+                        if (ok) return { x, y };
+                    }
+                    return { x: (pad + Math.random() * (1 - pad * 2)) * w, y: (pad + Math.random() * (1 - pad * 2)) * h };
+                },
+                initNumbers(cfg) {
+                    this.nb.visible = [];
+                    this.nb.hold = 2.0 / this.sf(cfg);
+                    this.nb.init = true;
+                },
+                updateNumbers(dt, w, h, cfg) {
+                    if (!this.nb.init) this.initNumbers(cfg);
+                    this.nb.hold -= dt;
+                    if (this.nb.hold <= 0) {
+                        if (this.nb.visible.length < 29) {
+                            const fontSize = Math.max(18, cfg.size * 1.6);
+                            const pos = this.getNumberPos(w, h, this.nb.visible, fontSize * 1.8);
+                            this.nb.visible.push({ x: pos.x, y: pos.y, value: Math.floor(Math.random() * 30) + 1 });
+                        } else {
+                            this.initNumbers(cfg);
+                        }
+                        this.nb.hold = 2.0 / this.sf(cfg);
+                    }
+                },
+                renderRandomNumbers(ctx, w, h, cfg) {
+                    if (!this.nb.init) this.initNumbers(cfg);
+                    const fontSize = Math.max(18, cfg.size * 1.8);
+                    ctx.save();
+                    ctx.font = `bold ${fontSize}px Inter, system-ui, monospace`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = cfg.color;
+                    for (const item of this.nb.visible) {
+                        ctx.fillText(String(item.value), item.x, item.y);
+                    }
+                    ctx.restore();
+                },
+
+                // ── Dual Bounce ───────────────────────────────────────────────────
+                initDualBounce(w, h, cfg) {
+                    const m = cfg.size + 8, speed = this.sf(cfg) * 280;
+                    const a1 = Math.random() * Math.PI * 2, a2 = Math.random() * Math.PI * 2;
+                    this.db.a = { x: m + Math.random() * (w - m * 2), y: m + Math.random() * (h - m * 2), vx: Math.cos(a1) * speed, vy: Math.sin(a1) * speed, speedRatio: 1.0 };
+                    this.db.b = { x: m + Math.random() * (w - m * 2), y: m + Math.random() * (h - m * 2), vx: Math.cos(a2) * speed * 0.85, vy: Math.sin(a2) * speed * 0.85, speedRatio: 0.85 };
+                    this.db.init = true;
+                },
+                updateDualBounce(dt, w, h, cfg) {
+                    if (!this.db.init) this.initDualBounce(w, h, cfg);
+                    const baseSpeed = this.sf(cfg) * 280;
+                    const m = cfg.size + 8;
+                    for (const p of [this.db.a, this.db.b]) {
+                        const currentSpeed = Math.hypot(p.vx, p.vy);
+                        if (currentSpeed > 0) {
+                            const targetSpeed = baseSpeed * p.speedRatio;
+                            const scale = targetSpeed / currentSpeed;
+                            p.vx *= scale; p.vy *= scale;
+                        }
+                        p.x += p.vx * dt; p.y += p.vy * dt;
+                        if (p.x <= m) { p.x = m; p.vx = Math.abs(p.vx); }
+                        if (p.x >= w - m) { p.x = w - m; p.vx = -Math.abs(p.vx); }
+                        if (p.y <= m) { p.y = m; p.vy = Math.abs(p.vy); }
+                        if (p.y >= h - m) { p.y = h - m; p.vy = -Math.abs(p.vy); }
+                    }
+                },
+                renderDualBounce(ctx, w, h, cfg) {
+                    if (!this.db.init) this.initDualBounce(w, h, cfg);
+                    const stimType = cfg.stimulusType === 'emoji' ? 'dot' : cfg.stimulusType;
+                    this.drawStimulus(ctx, this.db.a.x, this.db.a.y, { ...cfg, stimulusType: stimType });
+                    this.drawStimulus(ctx, this.db.b.x, this.db.b.y, { ...cfg, color: '#ef4444', stimulusType: stimType });
+                },
+
+                // ── Zigzag Numbers ────────────────────────────────────────────────
+                getZigzagNumBallPos(progress, w, h, cfg) {
+                    const m = cfg.size + 8;
+                    const cy = h / 2;
+                    const ampY = h / 2 - m;
+                    // X: avanza de izquierda a derecha
+                    const x = m + progress * (w - 2 * m);
+                    // Y: triangle wave (zigzag arriba/abajo), empieza en centro
+                    const t = progress * this.ZN_ZIGS + 0.5;
+                    const frac = t % 1;
+                    const seg = Math.floor(t) % 2;
+                    const y = cy + (seg === 0 ? -ampY + frac * 2 * ampY : ampY - frac * 2 * ampY);
+                    return { x, y };
+                },
+                initZigzagNum(w, h, cfg) {
+                    this.zn.direction = 1;
+                    this.zn.progress = 0;
+                    this.zn.numbers = [];
+                    this.zn.numTimer = 0;
+                    this.zn.ball = this.getZigzagNumBallPos(0, w, h, cfg);
+                    this.zn.init = true;
+                },
+                spawnZigzagNumber(w, h, cfg) {
+                    const fontSize = Math.max(18, cfg.size * 1.6);
+                    const minDist = fontSize * 2.2;
+                    for (let attempt = 0; attempt < 30; attempt++) {
+                        const x = (0.07 + Math.random() * 0.86) * w;
+                        const y = (0.07 + Math.random() * 0.86) * h;
+                        let ok = true;
+                        for (const e of this.zn.numbers) {
+                            if (Math.hypot(x - e.x, y - e.y) < minDist) { ok = false; break; }
+                        }
+                        if (ok) { this.zn.numbers.push({ x, y, value: Math.floor(Math.random() * 30) + 1 }); return; }
+                    }
+                },
+                updateZigzagNum(dt, w, h, cfg) {
+                    if (!this.zn.init) this.initZigzagNum(w, h, cfg);
+                    const sf = this.sf(cfg);
+                    const cycleDuration = 7 / sf;
+                    this.zn.progress += (dt / cycleDuration) * this.zn.direction;
+                    if (this.zn.progress >= 1) {
+                        this.zn.progress = 1;
+                        this.zn.direction = -1;
+                    } else if (this.zn.progress <= 0) {
+                        this.zn.progress = 0;
+                        this.zn.direction = 1;
+                        this.zn.numbers = [];
+                        this.zn.numTimer = 0;
+                    }
+                    this.zn.ball = this.getZigzagNumBallPos(this.zn.progress, w, h, cfg);
+                    const numInterval = 0.6 / sf;
+                    this.zn.numTimer += dt;
+                    if (this.zn.numTimer >= numInterval && this.zn.numbers.length < 40) {
+                        this.zn.numTimer -= numInterval;
+                        this.spawnZigzagNumber(w, h, cfg);
+                    }
+                },
+                renderZigzagNum(ctx, w, h, cfg) {
+                    if (!this.zn.init) this.initZigzagNum(w, h, cfg);
+                    const fontSize = Math.max(18, cfg.size * 1.6);
+                    ctx.save();
+                    ctx.font = `bold ${fontSize}px Inter, system-ui, monospace`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = cfg.color;
+                    for (const num of this.zn.numbers) {
+                        ctx.fillText(String(num.value), num.x, num.y);
+                    }
+                    ctx.restore();
+                    const stimType = cfg.stimulusType === 'emoji' ? 'dot' : cfg.stimulusType;
+                    this.drawStimulus(ctx, this.zn.ball.x, this.zn.ball.y, cfg, { stimulusType: stimType });
+                },
+
+                // ── Four Pulse ────────────────────────────────────────────────────
+                renderFourPulse(ctx, w, h, cfg) {
+                    const baseSize = cfg.size;
+                    const minSize = Math.max(2, baseSize * 0.25);
+                    const maxSize = baseSize * 2.5;
+                    const sf = this.sf(cfg);
+                    const freq = sf * 1.5;
+                    const PI = Math.PI;
+                    const stimType = cfg.stimulusType === 'emoji' ? 'dot' : cfg.stimulusType;
+
+                    const dots = [
+                        { x: w * 0.25, y: h * 0.3,  phase: PI / 2 },       // arriba-izq: grande → enchica
+                        { x: w * 0.75, y: h * 0.3,  phase: 3 * PI / 2 },   // arriba-der: chico  → dilata
+                        { x: w * 0.25, y: h * 0.7,  phase: 3 * PI / 2 },   // abajo-izq:  opuesto a arriba-izq
+                        { x: w * 0.75, y: h * 0.7,  phase: PI / 2 },        // abajo-der:  opuesto a arriba-der
+                    ];
+
+                    for (const dot of dots) {
+                        const size = minSize + (maxSize - minSize) * (0.5 + 0.5 * Math.sin(this.t * freq + dot.phase));
+                        this.drawStimulus(ctx, dot.x, dot.y, cfg, { size, stimulusType: stimType });
+                    }
+                },
+
                 // ── Ghost path ────────────────────────────────────────────────────
                 drawGhostPath(ctx, w, h, cfg) {
                     // Tipos basados en estado no muestran trayectoria fantasma
-                    if (['saccade', 'zigzag', 'particles'].includes(cfg.exerciseType)) {
+                    if (['saccade', 'zigzag', 'particles', 'orbit_shapes', 'random_numbers', 'dual_bounce', 'four_pulse', 'zigzag_numbers'].includes(cfg.exerciseType)) {
                         return;
                     }
 
@@ -783,9 +1052,9 @@
                 },
 
                 // ── Stimulus ──────────────────────────────────────────────────────
-                drawStimulus(ctx, x, y, cfg) {
-                    const s = cfg.size,
-                        color = cfg.color;
+                drawStimulus(ctx, x, y, cfg, cfgOverride) {
+                    const c = cfgOverride ? { ...cfg, ...cfgOverride } : cfg;
+                    const s = c.size, color = c.color;
                     ctx.save();
 
                     // Halo
@@ -797,7 +1066,7 @@
                     ctx.fillStyle = grd;
                     ctx.fill();
 
-                    switch (cfg.stimulusType) {
+                    switch (c.stimulusType) {
                         case 'dot':
                             ctx.beginPath();
                             ctx.arc(x, y, s, 0, Math.PI * 2);
@@ -834,7 +1103,7 @@
                             ctx.font = `${s * 2.2}px Arial`;
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            ctx.fillText(cfg.emoji, x, y);
+                            ctx.fillText(c.emoji, x, y);
                             break;
                     }
                     ctx.restore();
@@ -886,6 +1155,16 @@
                             ctx.fillStyle = color; ctx.fill();
                             ctx.restore();
                         });
+                    } else if (cfg.exerciseType === 'orbit_shapes') {
+                        this.renderOrbit(ctx, w, h, cfg);
+                    } else if (cfg.exerciseType === 'random_numbers') {
+                        this.renderRandomNumbers(ctx, w, h, cfg);
+                    } else if (cfg.exerciseType === 'dual_bounce') {
+                        this.renderDualBounce(ctx, w, h, cfg);
+                    } else if (cfg.exerciseType === 'four_pulse') {
+                        this.renderFourPulse(ctx, w, h, cfg);
+                    } else if (cfg.exerciseType === 'zigzag_numbers') {
+                        this.renderZigzagNum(ctx, w, h, cfg);
                     } else {
                         const pos = this.computePos(w, h, cfg, this.t);
                         this.drawStimulus(ctx, pos.x, pos.y, cfg);
@@ -894,30 +1173,13 @@
 
                 // ── Lifecycle ─────────────────────────────────────────────────────
                 resetState() {
-                    this.zz = {
-                        x: 0,
-                        y: 0,
-                        vx: 0,
-                        vy: 0,
-                        init: false
-                    };
-                    this.sc = {
-                        cur: {
-                            x: 0,
-                            y: 0
-                        },
-                        nxt: {
-                            x: 0,
-                            y: 0
-                        },
-                        hold: 0,
-                        init: false
-                    };
-                    this.pt = {
-                        items: [],
-                        init: false,
-                        initSf: 0
-                    };
+                    this.zz = { x: 0, y: 0, vx: 0, vy: 0, init: false };
+                    this.sc = { cur: { x: 0, y: 0 }, nxt: { x: 0, y: 0 }, hold: 0, init: false };
+                    this.pt = { items: [], init: false, initSf: 0 };
+                    this.orb = { init: false, pending: [], visible: [], hold: 0 };
+                    this.nb = { init: false, visible: [], hold: 0 };
+                    this.db = { init: false, a: { x: 0, y: 0, vx: 0, vy: 0 }, b: { x: 0, y: 0, vx: 0, vy: 0 } };
+                    this.zn = { init: false, direction: 1, progress: 0, ball: { x: 0, y: 0 }, numbers: [], numTimer: 0 };
                     this.t = 0;
                     this.lastTs = null;
                 },
@@ -944,6 +1206,10 @@
                     this.updateZigzag(dt, w, h, cfg);
                     this.updateSaccade(dt, w, h, cfg);
                     this.updateParticles(dt, w, h, cfg);
+                    this.updateOrbit(dt, w, h, cfg);
+                    this.updateNumbers(dt, w, h, cfg);
+                    this.updateDualBounce(dt, w, h, cfg);
+                    if (cfg.exerciseType === 'zigzag_numbers') this.updateZigzagNum(dt, w, h, cfg);
 
                     this.drawFrame();
                     this.rafId = requestAnimationFrame((ts) => this.tick(ts));

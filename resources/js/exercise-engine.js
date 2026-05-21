@@ -14,6 +14,14 @@ export function createExerciseEngine(getConfig, onStateChange) {
     const PARTICLE_COUNT = 25;
     const particlesState = { initialized: false, items: [], lastSf: 0 };
 
+    const ORBIT_SHAPES = ['dot', 'triangle', 'square', 'diamond', 'pentagon', 'hexagon', 'star', 'cross'];
+    const orbitState = { initialized: false, pending: [], visible: [], holdRemaining: 0 };
+    const NUMBER_COUNT = 29;
+    const numbersState = { initialized: false, visible: [], holdRemaining: 0 };
+    const dualBounceState = { initialized: false, a: { x: 0, y: 0, vx: 0, vy: 0 }, b: { x: 0, y: 0, vx: 0, vy: 0 } };
+    const ZN_ZIGS = 5;
+    const zigzagNumState = { initialized: false, direction: 1, progress: 0, ball: { x: 0, y: 0 }, numbers: [], numTimer: 0 };
+
     function cfg() { return getConfig(); }
     function canvas() { return canvasEl; }
     function ctx() { return canvasEl?.getContext('2d') ?? null; }
@@ -325,6 +333,312 @@ export function createExerciseEngine(getConfig, onStateChange) {
         }
     }
 
+    // ─── Orbit Shapes ─────────────────────────────────────────────────────────
+
+    function initOrbit(w, h) {
+        const { cx, cy, r } = extents(w, h);
+        const shapes = [...ORBIT_SHAPES];
+        for (let i = shapes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shapes[i], shapes[j]] = [shapes[j], shapes[i]];
+        }
+        const positions = Array.from({ length: 8 }, (_, i) => {
+            const baseAngle = Math.PI * 2 * i / 8;
+            const angle = baseAngle + (Math.random() - 0.5) * (Math.PI / 4);
+            const dist = r * (0.92 + Math.random() * 0.07);
+            return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle), shape: shapes[i] };
+        });
+        for (let i = positions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [positions[i], positions[j]] = [positions[j], positions[i]];
+        }
+        orbitState.pending = positions;
+        orbitState.visible = [];
+        orbitState.holdRemaining = 2.0 / speedFactor();
+        orbitState.initialized = true;
+    }
+
+    function updateOrbit(dt, w, h) {
+        if (cfg().exerciseType !== 'orbit_shapes') return;
+        if (!orbitState.initialized) initOrbit(w, h);
+        orbitState.holdRemaining -= dt;
+        if (orbitState.holdRemaining <= 0) {
+            if (orbitState.pending.length > 0) {
+                orbitState.visible.push(orbitState.pending.shift());
+            } else {
+                initOrbit(w, h);
+            }
+            orbitState.holdRemaining = 2.0 / speedFactor();
+        }
+    }
+
+    function drawOrbitShape(g, x, y, shape, size, color) {
+        g.save();
+        switch (shape) {
+            case 'dot':
+                g.beginPath(); g.arc(x, y, size, 0, Math.PI * 2);
+                g.fillStyle = color; g.fill(); break;
+            case 'ring':
+                g.beginPath(); g.arc(x, y, size, 0, Math.PI * 2);
+                g.strokeStyle = color; g.lineWidth = Math.max(2, size * 0.25); g.stroke(); break;
+            case 'triangle':
+                g.beginPath();
+                for (let i = 0; i < 3; i++) {
+                    const a = -Math.PI / 2 + Math.PI * 2 * i / 3;
+                    i === 0 ? g.moveTo(x + size * Math.cos(a), y + size * Math.sin(a)) : g.lineTo(x + size * Math.cos(a), y + size * Math.sin(a));
+                }
+                g.closePath(); g.fillStyle = color; g.fill(); break;
+            case 'square':
+                g.fillStyle = color;
+                g.fillRect(x - size * 0.8, y - size * 0.8, size * 1.6, size * 1.6); break;
+            case 'diamond':
+                g.beginPath(); g.moveTo(x, y - size); g.lineTo(x + size * 0.7, y); g.lineTo(x, y + size); g.lineTo(x - size * 0.7, y);
+                g.closePath(); g.fillStyle = color; g.fill(); break;
+            case 'pentagon':
+                g.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const a = -Math.PI / 2 + Math.PI * 2 * i / 5;
+                    i === 0 ? g.moveTo(x + size * Math.cos(a), y + size * Math.sin(a)) : g.lineTo(x + size * Math.cos(a), y + size * Math.sin(a));
+                }
+                g.closePath(); g.fillStyle = color; g.fill(); break;
+            case 'hexagon':
+                g.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const a = Math.PI / 6 + Math.PI * 2 * i / 6;
+                    i === 0 ? g.moveTo(x + size * Math.cos(a), y + size * Math.sin(a)) : g.lineTo(x + size * Math.cos(a), y + size * Math.sin(a));
+                }
+                g.closePath(); g.fillStyle = color; g.fill(); break;
+            case 'star':
+                g.beginPath();
+                for (let i = 0; i < 10; i++) {
+                    const a = i * Math.PI / 5 - Math.PI / 2;
+                    const rad = i % 2 === 0 ? size : size * 0.4;
+                    i === 0 ? g.moveTo(x + rad * Math.cos(a), y + rad * Math.sin(a)) : g.lineTo(x + rad * Math.cos(a), y + rad * Math.sin(a));
+                }
+                g.closePath(); g.fillStyle = color; g.fill(); break;
+            case 'cross': {
+                const t = Math.max(2, size * 0.28);
+                g.fillStyle = color;
+                g.fillRect(x - size, y - t, size * 2, t * 2);
+                g.fillRect(x - t, y - size, t * 2, size * 2); break;
+            }
+        }
+        g.restore();
+    }
+
+    function renderOrbit(g, w, h) {
+        if (!orbitState.initialized) initOrbit(w, h);
+        const size = 28;
+        const color = cfg().color;
+        for (const pos of orbitState.visible) {
+            drawOrbitShape(g, pos.x, pos.y, pos.shape, size, color);
+        }
+        const { cx, cy } = extents(w, h);
+        drawStimulus(g, cx, cy);
+    }
+
+    // ─── Random Numbers ───────────────────────────────────────────────────────
+
+    function getNumberPos(w, h, existing, minDist) {
+        const pad = 0.09;
+        for (let attempt = 0; attempt < 25; attempt++) {
+            const x = (pad + Math.random() * (1 - pad * 2)) * w;
+            const y = (pad + Math.random() * (1 - pad * 2)) * h;
+            let ok = true;
+            for (const e of existing) {
+                if (Math.hypot(x - e.x, y - e.y) < minDist) { ok = false; break; }
+            }
+            if (ok) return { x, y };
+        }
+        return { x: (pad + Math.random() * (1 - pad * 2)) * w, y: (pad + Math.random() * (1 - pad * 2)) * h };
+    }
+
+    function initNumbers(w, h) {
+        numbersState.visible = [];
+        numbersState.holdRemaining = 2.0 / speedFactor();
+        numbersState.initialized = true;
+    }
+
+    function updateNumbers(dt, w, h) {
+        if (cfg().exerciseType !== 'random_numbers') return;
+        if (!numbersState.initialized) initNumbers(w, h);
+        numbersState.holdRemaining -= dt;
+        if (numbersState.holdRemaining <= 0) {
+            if (numbersState.visible.length < NUMBER_COUNT) {
+                const fontSize = Math.max(18, cfg().size * 1.6);
+                const pos = getNumberPos(w, h, numbersState.visible, fontSize * 1.8);
+                numbersState.visible.push({ x: pos.x, y: pos.y, value: Math.floor(Math.random() * 30) + 1 });
+            } else {
+                initNumbers(w, h);
+            }
+            numbersState.holdRemaining = 2.0 / speedFactor();
+        }
+    }
+
+    function renderRandomNumbers(g, w, h) {
+        if (!numbersState.initialized) initNumbers(w, h);
+        const color = cfg().color;
+        const fontSize = Math.max(18, cfg().size * 1.8);
+        g.save();
+        g.font = `bold ${fontSize}px Inter, system-ui, monospace`;
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillStyle = color;
+        for (const item of numbersState.visible) {
+            g.fillText(String(item.value), item.x, item.y);
+        }
+        g.restore();
+    }
+
+    // ─── Dual Bounce ──────────────────────────────────────────────────────────
+
+    function initDualBounce(w, h) {
+        const m = margin(), speed = speedFactor() * 280;
+        const a1 = Math.random() * Math.PI * 2, a2 = Math.random() * Math.PI * 2;
+        dualBounceState.a = {
+            x: m + Math.random() * (w - m * 2), y: m + Math.random() * (h - m * 2),
+            vx: Math.cos(a1) * speed, vy: Math.sin(a1) * speed, speedRatio: 1.0,
+        };
+        dualBounceState.b = {
+            x: m + Math.random() * (w - m * 2), y: m + Math.random() * (h - m * 2),
+            vx: Math.cos(a2) * speed * 0.85, vy: Math.sin(a2) * speed * 0.85, speedRatio: 0.85,
+        };
+        dualBounceState.initialized = true;
+    }
+
+    function updateDualBounce(dt, w, h) {
+        if (cfg().exerciseType !== 'dual_bounce') return;
+        if (!dualBounceState.initialized) initDualBounce(w, h);
+        const baseSpeed = speedFactor() * 280;
+        const m = margin();
+        for (const p of [dualBounceState.a, dualBounceState.b]) {
+            const currentSpeed = Math.hypot(p.vx, p.vy);
+            if (currentSpeed > 0) {
+                const targetSpeed = baseSpeed * p.speedRatio;
+                const scale = targetSpeed / currentSpeed;
+                p.vx *= scale; p.vy *= scale;
+            }
+            p.x += p.vx * dt; p.y += p.vy * dt;
+            if (p.x <= m) { p.x = m; p.vx = Math.abs(p.vx); }
+            if (p.x >= w - m) { p.x = w - m; p.vx = -Math.abs(p.vx); }
+            if (p.y <= m) { p.y = m; p.vy = Math.abs(p.vy); }
+            if (p.y >= h - m) { p.y = h - m; p.vy = -Math.abs(p.vy); }
+        }
+    }
+
+    function renderDualBounce(g, w, h) {
+        if (!dualBounceState.initialized) initDualBounce(w, h);
+        const stimType = cfg().stimulusType === 'emoji' ? 'dot' : cfg().stimulusType;
+        drawStimulus(g, dualBounceState.a.x, dualBounceState.a.y, cfg().color, stimType);
+        drawStimulus(g, dualBounceState.b.x, dualBounceState.b.y, '#ef4444', stimType);
+    }
+
+    // ─── Zigzag Numbers ──────────────────────────────────────────────────────
+
+    function getZigzagNumBallPos(progress, w, h) {
+        const m = margin();
+        const { cy } = extents(w, h);
+        const ampY = h / 2 - m;
+        // X: avanza de izquierda a derecha
+        const x = m + progress * (w - 2 * m);
+        // Y: triangle wave (zigzag arriba/abajo), empieza en el centro
+        const t = progress * ZN_ZIGS + 0.5;
+        const frac = t % 1;
+        const seg = Math.floor(t) % 2;
+        const y = cy + (seg === 0 ? -ampY + frac * 2 * ampY : ampY - frac * 2 * ampY);
+        return { x, y };
+    }
+
+    function initZigzagNum(w, h) {
+        zigzagNumState.direction = 1;
+        zigzagNumState.progress = 0;
+        zigzagNumState.numbers = [];
+        zigzagNumState.numTimer = 0;
+        zigzagNumState.ball = getZigzagNumBallPos(0, w, h);
+        zigzagNumState.initialized = true;
+    }
+
+    function spawnZigzagNumber(w, h) {
+        const fontSize = Math.max(18, cfg().size * 1.6);
+        const minDist = fontSize * 2.2;
+        for (let attempt = 0; attempt < 30; attempt++) {
+            const x = (0.07 + Math.random() * 0.86) * w;
+            const y = (0.07 + Math.random() * 0.86) * h;
+            let ok = true;
+            for (const e of zigzagNumState.numbers) {
+                if (Math.hypot(x - e.x, y - e.y) < minDist) { ok = false; break; }
+            }
+            if (ok) { zigzagNumState.numbers.push({ x, y, value: Math.floor(Math.random() * 30) + 1 }); return; }
+        }
+    }
+
+    function updateZigzagNum(dt, w, h) {
+        if (cfg().exerciseType !== 'zigzag_numbers') return;
+        if (!zigzagNumState.initialized) initZigzagNum(w, h);
+        const sf = speedFactor();
+        const cycleDuration = 7 / sf;
+        zigzagNumState.progress += (dt / cycleDuration) * zigzagNumState.direction;
+        if (zigzagNumState.progress >= 1) {
+            zigzagNumState.progress = 1;
+            zigzagNumState.direction = -1;
+        } else if (zigzagNumState.progress <= 0) {
+            zigzagNumState.progress = 0;
+            zigzagNumState.direction = 1;
+            zigzagNumState.numbers = [];
+            zigzagNumState.numTimer = 0;
+        }
+        zigzagNumState.ball = getZigzagNumBallPos(zigzagNumState.progress, w, h);
+        const numInterval = 0.6 / sf;
+        zigzagNumState.numTimer += dt;
+        if (zigzagNumState.numTimer >= numInterval && zigzagNumState.numbers.length < 40) {
+            zigzagNumState.numTimer -= numInterval;
+            spawnZigzagNumber(w, h);
+        }
+    }
+
+    function renderZigzagNum(g, w, h) {
+        if (!zigzagNumState.initialized) initZigzagNum(w, h);
+        const fontSize = Math.max(18, cfg().size * 1.6);
+        g.save();
+        g.font = `bold ${fontSize}px Inter, system-ui, monospace`;
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.fillStyle = cfg().color;
+        for (const num of zigzagNumState.numbers) {
+            g.fillText(String(num.value), num.x, num.y);
+        }
+        g.restore();
+        const stimType = cfg().stimulusType === 'emoji' ? 'dot' : cfg().stimulusType;
+        drawStimulus(g, zigzagNumState.ball.x, zigzagNumState.ball.y, cfg().color, stimType);
+    }
+
+    // ─── Four Pulse ──────────────────────────────────────────────────────────
+
+    function renderFourPulse(g, w, h) {
+        const baseSize = cfg().size;
+        const minSize = Math.max(2, baseSize * 0.25);
+        const maxSize = baseSize * 2.5;
+        const sf = speedFactor();
+        const freq = sf * 1.5;
+        const PI = Math.PI;
+        const stimType = cfg().stimulusType === 'emoji' ? 'dot' : cfg().stimulusType;
+
+        // Cuatro puntos fijos: 2 arriba, 2 abajo.
+        // Fase π/2  → empieza en MAX (enchicándose primero).
+        // Fase 3π/2 → empieza en MIN (dilatándose primero).
+        const dots = [
+            { x: w * 0.25, y: h * 0.3,  phase: PI / 2 },       // arriba-izq:  empieza grande (enchicándose)
+            { x: w * 0.75, y: h * 0.3,  phase: 3 * PI / 2 },   // arriba-der:  empieza chico  (dilatándose)
+            { x: w * 0.25, y: h * 0.7,  phase: 3 * PI / 2 },   // abajo-izq:   opuesto a arriba-izq
+            { x: w * 0.75, y: h * 0.7,  phase: PI / 2 },        // abajo-der:   opuesto a arriba-der
+        ];
+
+        for (const dot of dots) {
+            const size = minSize + (maxSize - minSize) * (0.5 + 0.5 * Math.sin(elapsedTime * freq + dot.phase));
+            drawStimulus(g, dot.x, dot.y, cfg().color, stimType, size);
+        }
+    }
+
     // ─── Rendering ────────────────────────────────────────────────────────────
 
     function clearCanvas(color = '#0f172a') {
@@ -334,8 +648,9 @@ export function createExerciseEngine(getConfig, onStateChange) {
         g.fillRect(0, 0, c.width, c.height);
     }
 
-    function drawStimulus(g, x, y) {
-        const size = cfg().size, color = cfg().color;
+    function drawStimulus(g, x, y, colorOverride, stimTypeOverride, sizeOverride) {
+        const size = sizeOverride ?? cfg().size, color = colorOverride ?? cfg().color;
+        const stimType = stimTypeOverride ?? cfg().stimulusType;
         g.save();
 
         const grd = g.createRadialGradient(x, y, 0, x, y, size * 2.5);
@@ -346,7 +661,7 @@ export function createExerciseEngine(getConfig, onStateChange) {
         g.fillStyle = grd;
         g.fill();
 
-        switch (cfg().stimulusType) {
+        switch (stimType) {
             case 'dot':
                 g.beginPath(); g.arc(x, y, size, 0, Math.PI * 2);
                 g.fillStyle = color; g.fill(); break;
@@ -379,7 +694,7 @@ export function createExerciseEngine(getConfig, onStateChange) {
 
     function drawGhostPath(g) {
         const type = cfg().exerciseType;
-        if (['saccade', 'zigzag', 'particles'].includes(type)) return;
+        if (['saccade', 'zigzag', 'particles', 'orbit_shapes', 'random_numbers', 'dual_bounce', 'four_pulse', 'zigzag_numbers'].includes(type)) return;
 
         const sf = speedFactor();
         const isBee = ['bee_h', 'bee_v'].includes(type);
@@ -449,6 +764,16 @@ export function createExerciseEngine(getConfig, onStateChange) {
                 g.fillStyle = color; g.fill();
                 g.restore();
             });
+        } else if (cfg().exerciseType === 'orbit_shapes') {
+            renderOrbit(g, c.width, c.height);
+        } else if (cfg().exerciseType === 'random_numbers') {
+            renderRandomNumbers(g, c.width, c.height);
+        } else if (cfg().exerciseType === 'dual_bounce') {
+            renderDualBounce(g, c.width, c.height);
+        } else if (cfg().exerciseType === 'four_pulse') {
+            renderFourPulse(g, c.width, c.height);
+        } else if (cfg().exerciseType === 'zigzag_numbers') {
+            renderZigzagNum(g, c.width, c.height);
         } else {
             const pos = computePosition(elapsedTime);
             drawStimulus(g, pos.x, pos.y);
@@ -466,7 +791,7 @@ export function createExerciseEngine(getConfig, onStateChange) {
             if (newElapsed !== elapsedSeconds) { elapsedSeconds = newElapsed; notify(); }
 
             const c = canvas();
-            if (c) { updateSaccade(dt); updateZigzag(dt, c.width, c.height); updateParticles(dt, c.width, c.height); }
+            if (c) { updateSaccade(dt); updateZigzag(dt, c.width, c.height); updateParticles(dt, c.width, c.height); updateOrbit(dt, c.width, c.height); updateNumbers(dt, c.width, c.height); updateDualBounce(dt, c.width, c.height); updateZigzagNum(dt, c.width, c.height); }
 
             if (cfg().duration > 0 && elapsedTime >= cfg().duration) { stop(); return; }
         }
@@ -482,6 +807,10 @@ export function createExerciseEngine(getConfig, onStateChange) {
         elapsedTime = 0; elapsedSeconds = 0; lastTimestamp = null;
         saccade.initialized = false; zigzag.initialized = false;
         particlesState.initialized = false; particlesState.items = []; particlesState.lastSf = 0;
+        orbitState.initialized = false;
+        numbersState.initialized = false; numbersState.visible = [];
+        dualBounceState.initialized = false;
+        zigzagNumState.initialized = false; zigzagNumState.numbers = [];
         const delay = cfg().delay ?? 0;
         if (delay > 0) {
             countdownValue = delay;
@@ -512,6 +841,10 @@ export function createExerciseEngine(getConfig, onStateChange) {
         elapsedTime = 0; elapsedSeconds = 0; countdownValue = 0;
         saccade.initialized = false; zigzag.initialized = false;
         particlesState.initialized = false; particlesState.items = []; particlesState.lastSf = 0;
+        orbitState.initialized = false;
+        numbersState.initialized = false; numbersState.visible = [];
+        dualBounceState.initialized = false;
+        zigzagNumState.initialized = false; zigzagNumState.numbers = [];
         setState('idle');
         clearCanvas();
     }

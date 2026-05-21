@@ -30,6 +30,11 @@ $tipoIconos = [
     'hourglass'        => '⏳',
     'circular_bounce'  => '🔁',
     's_curve'          => '〰',
+    'orbit_shapes'     => '🔵',
+    'random_numbers'   => '🔢',
+    'dual_bounce'      => '🔴',
+    'four_pulse'       => '⚫',
+    'zigzag_numbers'   => '⚡',
 ];
 
 $tipoNombres = [
@@ -63,6 +68,11 @@ $tipoNombres = [
     'hourglass'        => 'Reloj de arena',
     'circular_bounce'  => 'Círculo rebote',
     's_curve'          => 'Curva S',
+    'orbit_shapes'     => 'Órbita de figuras',
+    'random_numbers'   => 'Números aleatorios',
+    'dual_bounce'      => 'Dos figuras rebotando',
+    'four_pulse'       => 'Cuatro puntos (pulso)',
+    'zigzag_numbers'   => 'Zigzag con números',
 ];
 
 $firstName     = explode(' ', Auth::user()->name)[0] ?? 'Usuario';
