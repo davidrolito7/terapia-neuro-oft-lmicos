@@ -106,9 +106,9 @@ class ExercisePlanForm
                                 Grid::make(3)->schema([
                                     TextInput::make('velocidad')
                                         ->label('Velocidad')
-                                        ->helperText('1 = lento · 10 = rápido')
+                                        ->helperText('1 = lento · 20 = rápido')
                                         ->numeric()->default(5)
-                                        ->minValue(1)->maxValue(10)
+                                        ->minValue(1)->maxValue(20)
                                         ->required()->live(),
 
                                     TextInput::make('tamano')
