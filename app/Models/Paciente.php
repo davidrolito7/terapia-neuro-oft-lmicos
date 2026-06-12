@@ -18,6 +18,7 @@ class Paciente extends Model
         'apellido_paterno',
         'apellido_materno',
         'telefono',
+        'email',
         'direccion',
         'fecha_nacimiento',
         'notas',
@@ -55,5 +56,10 @@ class Paciente extends Model
     public function sesiones(): HasMany
     {
         return $this->hasMany(SesionEjercicio::class, 'paciente_id');
+    }
+
+    public function citas(): HasMany
+    {
+        return $this->hasMany(Cita::class, 'paciente_id');
     }
 }

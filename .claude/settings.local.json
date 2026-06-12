@@ -28,7 +28,19 @@
       "Bash(sed -i '' '443s/return this\\\\.walkPath/return this.walkPathBounce/' /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/resources/views/filament/forms/components/canvas-preview.blade.php)",
       "Bash(sed -i '' '488s/return this\\\\.walkPath/return this.walkPathBounce/' /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/resources/views/filament/forms/components/canvas-preview.blade.php)",
       "Bash(sed -i '' '541s/return this\\\\.walkPath/return this.walkPathBounce/' /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/resources/views/filament/forms/components/canvas-preview.blade.php)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(php -l app/Filament/Resources/Citas/CitaResource.php)",
+      "Bash(php -l app/Filament/Pages/CalendarioCitas.php)",
+      "Bash(php -l /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/app/Filament/Resources/Citas/Tables/CitasTable.php)",
+      "Bash(php -l /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/app/Filament/Resources/Citas/Schemas/CitaForm.php)",
+      "Bash(php -l /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/app/Models/Cita.php)",
+      "Bash(php -l app/Filament/Resources/Citas/Schemas/CitaForm.php)",
+      "Bash(php -l app/Models/Cita.php)",
+      "Bash(php -l app/Filament/Resources/Citas/Tables/CitasTable.php)",
+      "Bash(php -l app/Filament/Widgets/PatientCitasHistorialWidget.php)",
+      "Bash(php -l app/Filament/Resources/Patients/Pages/EditPatient.php)",
+      "Bash(mysql -u root -prootroot terapia_visual -e \"DESCRIBE pacientes;\")",
+      "Bash(php /Users/davidrodriguezosorio/Documents/Laravel/terapia-visual/artisan tinker --execute=\"echo implode\\(', ', array_column\\(\\\\DB::select\\('DESCRIBE pacientes'\\), 'Field'\\)\\);\")"
     ]
   }
 }

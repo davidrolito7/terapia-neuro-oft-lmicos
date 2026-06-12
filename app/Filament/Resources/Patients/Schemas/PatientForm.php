@@ -57,6 +57,13 @@ class PatientForm
                                 'unique' => 'Este número de teléfono ya está registrado.',
                             ]),
 
+                        TextInput::make('email')
+                            ->label('Correo electrónico')
+                            ->email()
+                            ->maxLength(255)
+                            ->placeholder('paciente@ejemplo.com')
+                            ->helperText('Se usará para enviar recordatorios de citas.'),
+
                         DatePicker::make('fecha_nacimiento')
                             ->label('Fecha de nacimiento')
                             ->displayFormat('d/m/Y')
