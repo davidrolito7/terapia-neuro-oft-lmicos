@@ -198,24 +198,24 @@
                     if (this.pt.init && this.sf(cfg) !== this.pt.initSf) this.pt.init = false;
                     if (!this.pt.init) this.initParticles(w, h, cfg);
                     const m = cfg.size + 8;
-                    for (const p of this.pt.items) {
+                    for (let i = 0; i < this.pt.items.length; i++) {
+                        const p = this.pt.items[i];
                         p.x += p.vx * dt;
                         p.y += p.vy * dt;
-                        if (p.x <= m) {
-                            p.x = m;
-                            p.vx = Math.abs(p.vx);
-                        }
-                        if (p.x >= w - m) {
-                            p.x = w - m;
-                            p.vx = -Math.abs(p.vx);
-                        }
-                        if (p.y <= m) {
-                            p.y = m;
-                            p.vy = Math.abs(p.vy);
-                        }
-                        if (p.y >= h - m) {
-                            p.y = h - m;
-                            p.vy = -Math.abs(p.vy);
+                        let bl = false, br = false, bt = false, bb = false;
+                        if (p.x <= m)     { p.x = m;     p.vx =  Math.abs(p.vx); bl = true; }
+                        if (p.x >= w - m) { p.x = w - m; p.vx = -Math.abs(p.vx); br = true; }
+                        if (p.y <= m)     { p.y = m;     p.vy =  Math.abs(p.vy); bt = true; }
+                        if (p.y >= h - m) { p.y = h - m; p.vy = -Math.abs(p.vy); bb = true; }
+                        if (i === 0 && (bl || br || bt || bb)) {
+                            const speed = Math.hypot(p.vx, p.vy);
+                            const angle = Math.atan2(p.vy, p.vx) + (Math.random() - 0.5) * Math.PI * 0.7;
+                            p.vx = Math.cos(angle) * speed;
+                            p.vy = Math.sin(angle) * speed;
+                            if (bl) p.vx =  Math.abs(p.vx);
+                            if (br) p.vx = -Math.abs(p.vx);
+                            if (bt) p.vy =  Math.abs(p.vy);
+                            if (bb) p.vy = -Math.abs(p.vy);
                         }
                     }
                 },

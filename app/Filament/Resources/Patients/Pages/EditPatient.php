@@ -24,4 +24,9 @@ class EditPatient extends EditRecord
             PatientCitasHistorialWidget::class,
         ];
     }
+
+    protected function getFooterWidgetsColumns(): int|array
+    {
+        return 1;
+    }
 }

@@ -183,6 +183,28 @@ Alpine.data('exerciseSession', (planItems) => {
 
         skipRest() { this._clearRest(); this.startAt(this.currentIndex + 1); },
 
+        restartExercise() {
+            this._clearRest();
+            this.startAt(this.currentIndex);
+        },
+
+        skipExercise() {
+            this._clearRest();
+            const next = this.currentIndex + 1;
+            if (next >= this.planItems.length) {
+                _engine.reset();
+                this._mostrarCalificacion();
+                return;
+            }
+            this.startAt(next);
+        },
+
+        prevExercise() {
+            if (this.currentIndex === 0) return;
+            this._clearRest();
+            this.startAt(this.currentIndex - 1);
+        },
+
         _mostrarCalificacion() { this._clearRest(); this.pageState = 'rating'; },
 
         formatTime(s) {

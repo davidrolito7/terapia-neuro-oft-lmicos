@@ -67,18 +67,21 @@ class CalendarioCitas extends Page
 
     public function getCitasHoy(): int
     {
-        return Cita::whereDate('inicio', today())->count();
+        return Cita::whereDate('inicio', today())->where('estado', 'pendiente')->count();
     }
 
     public function getCitasSemana(): int
     {
-        return Cita::whereBetween('inicio', [now()->startOfWeek(), now()->endOfWeek()])->count();
+        return Cita::whereBetween('inicio', [now()->startOfWeek(), now()->endOfWeek()])
+            ->where('estado', 'pendiente')
+            ->count();
     }
 
     public function getCitasMes(): int
     {
         return Cita::whereMonth('inicio', now()->month)
             ->whereYear('inicio', now()->year)
+            ->where('estado', 'pendiente')
             ->count();
     }
 

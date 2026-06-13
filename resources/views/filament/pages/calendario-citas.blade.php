@@ -18,9 +18,8 @@
 .cal-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: .75rem;
 }
-@media (max-width: 640px) { .cal-stats { grid-template-columns: 1fr; } }
 .cal-cal-wrap {
     padding: 1.25rem;
 }
@@ -113,10 +112,12 @@
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 4px rgba(15,23,42,.06);
     overflow: hidden;
+    color: #0f172a;
 }
 .dark .cal-panel {
     background: #1e293b;
     border-color: rgba(51,65,85,.7);
+    color: #f1f5f9;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -125,8 +126,8 @@
 .cal-stat {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem 1.5rem;
+    gap: .875rem;
+    padding: 1rem 1.25rem;
     position: relative;
     overflow: hidden;
     animation: fadeUp .3s ease both;
@@ -134,11 +135,10 @@
 .cal-stat:nth-child(2) { animation-delay: .07s; }
 .cal-stat:nth-child(3) { animation-delay: .14s; }
 
-/* Squircle icon */
 .cal-stat-icon {
-    width: 3rem;
-    height: 3rem;
-    border-radius: .875rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: .75rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -147,18 +147,36 @@
 
 .cal-stat-body { flex: 1; min-width: 0; }
 .cal-stat-num {
-    font-size: 2rem;
+    font-size: 1.875rem;
     font-weight: 700;
     line-height: 1;
     letter-spacing: -.03em;
 }
 .cal-stat-label {
-    font-size: .72rem;
-    font-weight: 500;
-    color: #94a3b8;
+    font-size: .68rem;
+    font-weight: 600;
+    color: #64748b;
     margin-top: .25rem;
     text-transform: uppercase;
     letter-spacing: .05em;
+}
+.dark .cal-stat-label { color: #94a3b8; }
+
+.cal-stat-num-cyan    { color: #0891b2; }
+.cal-stat-num-indigo  { color: #6366f1; }
+.cal-stat-num-emerald { color: #10b981; }
+.dark .cal-stat-num-cyan    { color: #22d3ee; }
+.dark .cal-stat-num-indigo  { color: #a5b4fc; }
+.dark .cal-stat-num-emerald { color: #34d399; }
+
+/* Mobile: 3 columnas compactas */
+@media (max-width: 540px) {
+    .cal-stats { gap: .4rem; }
+    .cal-stat { flex-direction: column; align-items: center; text-align: center; gap: .5rem; padding: .875rem .5rem; }
+    .cal-stat-icon { width: 2rem; height: 2rem; border-radius: .5rem; }
+    .cal-stat-icon .ic-md { width: 1rem !important; height: 1rem !important; }
+    .cal-stat-num { font-size: 1.375rem; }
+    .cal-stat-label { font-size: .6rem; margin-top: .125rem; }
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -480,7 +498,7 @@
                 </svg>
             </div>
             <div class="cal-stat-body">
-                <div class="cal-stat-num" style="color:#0891b2">{{ $this->getCitasHoy() }}</div>
+                <div class="cal-stat-num cal-stat-num-cyan">{{ $this->getCitasHoy() }}</div>
                 <div class="cal-stat-label">Citas hoy</div>
             </div>
         </div>
@@ -492,7 +510,7 @@
                 </svg>
             </div>
             <div class="cal-stat-body">
-                <div class="cal-stat-num" style="color:#6366f1">{{ $this->getCitasSemana() }}</div>
+                <div class="cal-stat-num cal-stat-num-indigo">{{ $this->getCitasSemana() }}</div>
                 <div class="cal-stat-label">Esta semana</div>
             </div>
         </div>
@@ -504,7 +522,7 @@
                 </svg>
             </div>
             <div class="cal-stat-body">
-                <div class="cal-stat-num" style="color:#10b981">{{ $this->getCitasMes() }}</div>
+                <div class="cal-stat-num cal-stat-num-emerald">{{ $this->getCitasMes() }}</div>
                 <div class="cal-stat-label">Este mes</div>
             </div>
         </div>

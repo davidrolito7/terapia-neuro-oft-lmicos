@@ -50,21 +50,61 @@
 
         <!-- Progreso + controles -->
         <div class="flex items-center gap-3">
-            <!-- Pausa/Reanudar (solo durante ejercicio) -->
+            <!-- Controles de ejercicio (solo durante ejercicio) -->
             <template x-if="pageState === 'exercising'">
-                <button @click="togglePause()"
-                    class="p-1.5 rounded-lg border border-white/20 text-white/60 hover:bg-white/10 transition-colors">
-                    <template x-if="engineState === 'running' || engineState === 'countdown'">
+                <div class="flex items-center gap-1.5">
+                    <!-- Anterior -->
+                    <button
+                        @click="prevExercise()"
+                        :disabled="currentIndex === 0"
+                        class="p-1.5 rounded-lg border border-white/20 text-white/60 hover:bg-white/10 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+                        title="Ejercicio anterior">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clip-rule="evenodd" />
+                            <path d="M9.195 18.44c1.25.714 2.805-.189 2.805-1.629v-2.34l6.945 3.968c1.25.715 2.805-.188 2.805-1.628V8.69c0-1.44-1.555-2.343-2.805-1.628L12 11.03v-2.34c0-1.44-1.554-2.343-2.805-1.628l-7.108 4.061c-1.26.72-1.26 2.536 0 3.256l7.108 4.061z" />
                         </svg>
-                    </template>
-                    <template x-if="engineState === 'paused'">
+                    </button>
+
+                    <!-- Reiniciar -->
+                    <button
+                        @click="restartExercise()"
+                        class="p-1.5 rounded-lg border border-white/20 text-white/60 hover:bg-white/10 transition-colors"
+                        title="Reiniciar ejercicio">
+                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                        </svg>
+                    </button>
+
+                    <!-- Separador -->
+                    <span class="w-px h-4 bg-white/10"></span>
+
+                    <!-- Pausa/Reanudar -->
+                    <button @click="togglePause()"
+                        class="p-1.5 rounded-lg border border-white/20 text-white/60 hover:bg-white/10 transition-colors">
+                        <template x-if="engineState === 'running' || engineState === 'countdown'">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clip-rule="evenodd" />
+                            </svg>
+                        </template>
+                        <template x-if="engineState === 'paused'">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+                            </svg>
+                        </template>
+                    </button>
+
+                    <!-- Separador -->
+                    <span class="w-px h-4 bg-white/10"></span>
+
+                    <!-- Saltar -->
+                    <button
+                        @click="skipExercise()"
+                        class="p-1.5 rounded-lg border border-white/20 text-white/60 hover:bg-white/10 transition-colors"
+                        title="Saltar ejercicio">
                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+                            <path d="M5.055 7.06C3.805 6.347 2.25 7.25 2.25 8.69v8.122c0 1.44 1.555 2.343 2.805 1.628L12 14.471v2.34c0 1.44 1.555 2.343 2.805 1.628l7.108-4.061c1.26-.72 1.26-2.536 0-3.256l-7.108-4.061C13.555 6.346 12 7.249 12 8.689v2.34L5.055 7.061z" />
                         </svg>
-                    </template>
-                </button>
+                    </button>
+                </div>
             </template>
 
             <!-- Dots de progreso -->
@@ -178,12 +218,27 @@
             <span class="text-4xl font-bold text-white" x-text="restSeconds"></span>
         </div>
 
-        <button
-            @click="skipRest()"
-            class="px-6 py-2.5 rounded-xl border border-white/20 text-white/70 text-sm font-medium hover:bg-white/10 transition-colors"
-        >
-            Saltar espera →
-        </button>
+        <div class="flex items-center gap-3">
+            <button
+                x-show="currentIndex > 0"
+                @click="prevExercise()"
+                class="px-5 py-2.5 rounded-xl border border-white/20 text-white/70 text-sm font-medium hover:bg-white/10 transition-colors flex items-center gap-1.5"
+            >
+                <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9.195 18.44c1.25.714 2.805-.189 2.805-1.629v-2.34l6.945 3.968c1.25.715 2.805-.188 2.805-1.628V8.69c0-1.44-1.555-2.343-2.805-1.628L12 11.03v-2.34c0-1.44-1.554-2.343-2.805-1.628l-7.108 4.061c-1.26.72-1.26 2.536 0 3.256l7.108 4.061z" />
+                </svg>
+                Anterior
+            </button>
+            <button
+                @click="skipRest()"
+                class="px-6 py-2.5 rounded-xl border border-white/20 text-white/70 text-sm font-medium hover:bg-white/10 transition-colors flex items-center gap-1.5"
+            >
+                Saltar espera
+                <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5.055 7.06C3.805 6.347 2.25 7.25 2.25 8.69v8.122c0 1.44 1.555 2.343 2.805 1.628L12 14.471v2.34c0 1.44 1.555 2.343 2.805 1.628l7.108-4.061c1.26-.72 1.26-2.536 0-3.256l-7.108-4.061C13.555 6.346 12 7.249 12 8.689v2.34L5.055 7.061z" />
+                </svg>
+            </button>
+        </div>
     </div>
 
     <!-- ── Pantalla de calificación ───────────────────────────────────────── -->
