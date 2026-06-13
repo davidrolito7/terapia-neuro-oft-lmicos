@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Mail\RecordatorioCita;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Mail;
 
 class Cita extends Model
 {
@@ -49,6 +51,24 @@ class Cita extends Model
         static::creating(function (Cita $cita) {
             if (empty($cita->color) && $cita->paciente_id) {
                 $cita->color = self::colorPorPaciente((int) $cita->paciente_id);
+            }
+        });
+
+        static::created(function (Cita $cita) {
+            if ($cita->inicio->toDateString() !== now()->addDay()->toDateString()) {
+                return;
+            }
+
+            $cita->loadMissing('paciente');
+
+            if (!$cita->paciente?->email) {
+                return;
+            }
+
+            try {
+                Mail::to($cita->paciente->email)->send(new RecordatorioCita($cita));
+            } catch (\Throwable) {
+                // No interrumpir la creación si el correo falla
             }
         });
     }
