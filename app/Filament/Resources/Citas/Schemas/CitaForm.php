@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Citas\Schemas;
 
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -60,6 +59,7 @@ class CitaForm
                                 ->label('Hora')
                                 ->required()
                                 ->minutesStep(15)
+                                ->seconds(false)
                                 ->native(false)
                                 ->displayFormat('H:i')
                                 ->default(now()->setMinutes(0)->addHour())
@@ -204,6 +204,7 @@ class CitaForm
 
                         DatePicker::make('fin_recurrencia')
                             ->label('Termina el')
+                            ->native(false)
                             ->displayFormat('d/m/Y')
                             ->minDate(now())
                             ->helperText('Si no se indica, se generan 6 meses de citas.')
