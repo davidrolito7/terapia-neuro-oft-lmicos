@@ -9,6 +9,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -34,15 +35,47 @@ class CitaForm
                             ->required()
                             ->columnSpanFull(),
 
-                        Grid::make(2)->schema([
-                            DateTimePicker::make('inicio')
-                                ->label('Fecha y hora de inicio')
+                        Grid::make(3)->schema([
+                            DatePicker::make('inicio_fecha')
+                                ->label('Fecha')
+                                ->required()
+                                ->native(false)
+                                ->displayFormat('d/m/Y')
+                                ->default(now()->addHour())
+                                ->dehydrated(false)
+                                ->live()
+                                ->afterStateHydrated(function ($component, $record) {
+                                    if ($record?->inicio) {
+                                        $component->state($record->inicio->toDateString());
+                                    }
+                                })
+                                ->afterStateUpdated(function ($state, $get, $set) {
+                                    $hora = $get('inicio_hora');
+                                    if ($state && $hora) {
+                                        $set('inicio', $state . ' ' . $hora);
+                                    }
+                                }),
+
+                            TimePicker::make('inicio_hora')
+                                ->label('Hora')
                                 ->required()
                                 ->minutesStep(15)
                                 ->native(false)
-                                ->displayFormat('d/m/Y H:i')
+                                ->displayFormat('H:i')
                                 ->default(now()->setMinutes(0)->addHour())
-                                ->columnSpan(1),
+                                ->dehydrated(false)
+                                ->live()
+                                ->afterStateHydrated(function ($component, $record) {
+                                    if ($record?->inicio) {
+                                        $component->state($record->inicio->format('H:i'));
+                                    }
+                                })
+                                ->afterStateUpdated(function ($state, $get, $set) {
+                                    $fecha = $get('inicio_fecha');
+                                    if ($fecha && $state) {
+                                        $set('inicio', $fecha . ' ' . $state);
+                                    }
+                                }),
 
                             Select::make('duracion_minutos')
                                 ->label('Duración')
@@ -54,9 +87,11 @@ class CitaForm
                                     120 => '2 horas',
                                 ])
                                 ->default(60)
-                                ->required()
-                                ->columnSpan(1),
+                                ->required(),
                         ]),
+
+                        Hidden::make('inicio')
+                            ->default(now()->setMinutes(0)->addHour()),
                     ]),
 
                 Section::make('Repetición')
