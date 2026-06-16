@@ -7,11 +7,11 @@
     <style>
         body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .header { background: #1e40af; padding: 32px 40px; text-align: center; }
+        .header { background: #1e40af; padding: 32px 40px 16px; text-align: center; }
         .header h1 { color: #ffffff; margin: 0; font-size: 22px; }
         .header p { color: #bfdbfe; margin: 8px 0 0; font-size: 14px; }
-        .body { padding: 40px; }
-        .greeting { font-size: 18px; color: #1e293b; margin-bottom: 16px; }
+        .body { padding: 16px 40px 40px; }
+        .greeting { font-size: 18px; color: #1e293b; margin: 0 0 16px; }
         .message { color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
         .card { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
         .card-row { display: flex; align-items: center; margin-bottom: 12px; }
@@ -31,10 +31,10 @@
         </div>
 
         <div class="body">
-            <div style="overflow:hidden; height:120px; text-align:center; margin:0 auto 20px;">
+            <div style="overflow:hidden; height:120px; text-align:center; margin:0 auto 12px;">
                 <img src="https://neuro-rehabilitacion-visual-jgm.com/img/logo1.png"
                      alt="Logo Neuro Rehabilitación Visual JGM"
-                     style="display:block; height:340px; width:auto; margin:-80px auto 0;" />
+                     style="display:block; height:340px; width:auto; margin:-95px auto 0;" />
             </div>
 
             <p class="greeting">Hola, {{ $cita->paciente->nombre_completo }}.</p>
