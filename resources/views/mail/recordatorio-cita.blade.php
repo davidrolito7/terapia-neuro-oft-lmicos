@@ -33,7 +33,7 @@
         <div class="body">
             <img src="https://neuro-rehabilitacion-visual-jgm.com/img/logo1.png"
                  alt="Logo Neuro Rehabilitación Visual JGM"
-                 style="display:block; height:112px; width:auto; margin:0 auto 20px; transform:scale(1.35); transform-origin:center;" />
+                 style="display:block; height:160px; width:auto; margin:0 auto 20px;" />
 
             <p class="greeting">Hola, {{ $cita->paciente->nombre_completo }}.</p>
 
@@ -70,7 +70,7 @@
             </div>
 
             <div class="note">
-                Si necesitas cancelar o reprogramar tu cita, comunícate con nosotros lo antes posible al <strong>951 417 70 89</strong>.
+                Si necesitas cancelar o reprogramar tu cita, comunícate con nosotros lo antes posible al <a href="tel:9514177089" style="color:#1e40af; font-weight:700; text-decoration:none;">9514177089</a>.
             </div>
         </div>
 
