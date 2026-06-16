@@ -31,9 +31,11 @@
         </div>
 
         <div class="body">
-            <img src="https://neuro-rehabilitacion-visual-jgm.com/img/logo1.png"
-                 alt="Logo Neuro Rehabilitación Visual JGM"
-                 style="display:block; height:160px; width:auto; margin:0 auto 20px;" />
+            <div style="overflow:hidden; height:120px; text-align:center; margin:0 auto 20px;">
+                <img src="https://neuro-rehabilitacion-visual-jgm.com/img/logo1.png"
+                     alt="Logo Neuro Rehabilitación Visual JGM"
+                     style="display:block; height:340px; width:auto; margin:-80px auto 0;" />
+            </div>
 
             <p class="greeting">Hola, {{ $cita->paciente->nombre_completo }}.</p>
 
