@@ -12,5 +12,5 @@ Artisan::command('inspire', function () {
 //Schedule::command('citas:recordatorios')->dailyAt('09:00');
 
 Schedule::command('citas:recordatorios')
-    ->everyMinute()
+    ->dailyAt('09:00')
     ->appendOutputTo(storage_path('logs/recordatorios-schedule.log'));
