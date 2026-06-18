@@ -15,19 +15,17 @@ class EnviarRecordatoriosCitas extends Command
 
     public function handle(): int
     {
-        $manana = now()->addDays(2);
-        
+        $manana = now()->addDay();
+
         $this->info('Ahora Laravel: ' . now()->format('Y-m-d H:i:s T'));
         $this->info('Buscando citas para: ' . $manana->toDateString());
 
         $totalManana = Cita::whereDate('inicio', $manana->toDateString())->count();
 
         $totalConEmail = Cita::whereDate('inicio', $manana->toDateString())
-            ->whereHas(
-                'paciente',
-                fn($q) => $q
-                    ->whereNotNull('email')
-                    ->where('email', '!=', '')
+            ->whereHas('paciente', fn ($q) => $q
+                ->whereNotNull('email')
+                ->where('email', '!=', '')
             )
             ->count();
 
@@ -42,11 +40,9 @@ class EnviarRecordatoriosCitas extends Command
         $citas = Cita::with(['paciente', 'terapeuta'])
             ->whereDate('inicio', $manana->toDateString())
             ->whereNotIn('estado', ['cancelada', 'no_asistio'])
-            ->whereHas(
-                'paciente',
-                fn($q) => $q
-                    ->whereNotNull('email')
-                    ->where('email', '!=', '')
+            ->whereHas('paciente', fn ($q) => $q
+                ->whereNotNull('email')
+                ->where('email', '!=', '')
             )
             ->get();
 
@@ -59,7 +55,7 @@ class EnviarRecordatoriosCitas extends Command
 
         $this->table(
             ['Paciente', 'Email', 'Hora', 'Estado'],
-            $citas->map(fn($c) => [
+            $citas->map(fn ($c) => [
                 $c->paciente->nombre_completo,
                 $c->paciente->email,
                 $c->inicio->format('H:i'),
