@@ -17,10 +17,33 @@ class EnviarRecordatoriosCitas extends Command
     {
         $manana = now()->addDay();
 
+        $this->info('Ahora Laravel: ' . now()->format('Y-m-d H:i:s T'));
+        $this->info('Buscando citas para: ' . $manana->toDateString());
+
+        $totalManana = Cita::whereDate('inicio', $manana->toDateString())->count();
+
+        $totalConEmail = Cita::whereDate('inicio', $manana->toDateString())
+            ->whereHas('paciente', fn ($q) => $q
+                ->whereNotNull('email')
+                ->where('email', '!=', '')
+            )
+            ->count();
+
+        $totalEstadoValido = Cita::whereDate('inicio', $manana->toDateString())
+            ->whereNotIn('estado', ['cancelada', 'no_asistio'])
+            ->count();
+
+        $this->info('Total citas mañana: ' . $totalManana);
+        $this->info('Total citas mañana con email: ' . $totalConEmail);
+        $this->info('Total citas mañana con estado válido: ' . $totalEstadoValido);
+
         $citas = Cita::with(['paciente', 'terapeuta'])
             ->whereDate('inicio', $manana->toDateString())
             ->whereNotIn('estado', ['cancelada', 'no_asistio'])
-            ->whereHas('paciente', fn ($q) => $q->whereNotNull('email'))
+            ->whereHas('paciente', fn ($q) => $q
+                ->whereNotNull('email')
+                ->where('email', '!=', '')
+            )
             ->get();
 
         if ($citas->isEmpty()) {
