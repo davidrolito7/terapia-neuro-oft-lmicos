@@ -9,4 +9,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // Recordatorios de citas: se ejecuta cada día a las 9:00 AM
-Schedule::command('citas:recordatorios')->dailyAt('09:00');
+//Schedule::command('citas:recordatorios')->dailyAt('09:00');
+
+Schedule::command('citas:recordatorios')
+    ->everyMinute()
+    ->appendOutputTo(storage_path('logs/recordatorios-schedule.log'));
