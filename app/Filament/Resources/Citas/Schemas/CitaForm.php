@@ -58,7 +58,6 @@ class CitaForm
                             TimePicker::make('inicio_hora')
                                 ->label('Hora')
                                 ->required()
-                                ->minutesStep(15)
                                 ->seconds(false)
                                 ->native(false)
                                 ->displayFormat('H:i')
