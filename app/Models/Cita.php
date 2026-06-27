@@ -54,23 +54,23 @@ class Cita extends Model
             }
         });
 
-        static::created(function (Cita $cita) {
-            if ($cita->inicio->toDateString() !== now()->addDay()->toDateString()) {
-                return;
-            }
+        // static::created(function (Cita $cita) {
+        //     if ($cita->inicio->toDateString() !== now()->addDay()->toDateString()) {
+        //         return;
+        //     }
 
-            $cita->loadMissing('paciente');
+        //     $cita->loadMissing('paciente');
 
-            if (!$cita->paciente?->email) {
-                return;
-            }
+        //     if (!$cita->paciente?->email) {
+        //         return;
+        //     }
 
-            try {
-                Mail::to($cita->paciente->email)->send(new RecordatorioCita($cita));
-            } catch (\Throwable) {
-                // No interrumpir la creación si el correo falla
-            }
-        });
+        //     try {
+        //         Mail::to($cita->paciente->email)->send(new RecordatorioCita($cita));
+        //     } catch (\Throwable) {
+        //         // No interrumpir la creación si el correo falla
+        //     }
+        // });
     }
 
     protected $casts = [
