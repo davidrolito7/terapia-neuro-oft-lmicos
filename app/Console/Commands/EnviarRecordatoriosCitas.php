@@ -11,34 +11,38 @@ class EnviarRecordatoriosCitas extends Command
 {
     protected $signature = 'citas:recordatorios {--dry-run : Muestra las citas sin enviar correos}';
 
-    protected $description = 'Envía recordatorios por correo a los pacientes con cita mañana';
+    protected $description = 'Envía recordatorios por correo a los pacientes con cita en el minuto actual';
 
     public function handle(): int
     {
-        $manana = now()->addDay();
+        $ahora = now();
 
-        $this->info('Ahora Laravel: ' . now()->format('Y-m-d H:i:s T'));
-        $this->info('Buscando citas para: ' . $manana->toDateString());
+        $inicioMinuto = $ahora->copy()->startOfMinute();
+        $finMinuto = $ahora->copy()->endOfMinute();
 
-        $totalManana = Cita::whereDate('inicio', $manana->toDateString())->count();
+        $this->info('Ahora Laravel: ' . $ahora->format('Y-m-d H:i:s T'));
+        $this->info('Buscando citas desde: ' . $inicioMinuto->format('Y-m-d H:i:s'));
+        $this->info('Buscando citas hasta: ' . $finMinuto->format('Y-m-d H:i:s'));
 
-        $totalConEmail = Cita::whereDate('inicio', $manana->toDateString())
+        $totalAhora = Cita::whereBetween('inicio', [$inicioMinuto, $finMinuto])->count();
+
+        $totalConEmail = Cita::whereBetween('inicio', [$inicioMinuto, $finMinuto])
             ->whereHas('paciente', fn ($q) => $q
                 ->whereNotNull('email')
                 ->where('email', '!=', '')
             )
             ->count();
 
-        $totalEstadoValido = Cita::whereDate('inicio', $manana->toDateString())
+        $totalEstadoValido = Cita::whereBetween('inicio', [$inicioMinuto, $finMinuto])
             ->whereNotIn('estado', ['cancelada', 'no_asistio'])
             ->count();
 
-        $this->info('Total citas mañana: ' . $totalManana);
-        $this->info('Total citas mañana con email: ' . $totalConEmail);
-        $this->info('Total citas mañana con estado válido: ' . $totalEstadoValido);
+        $this->info('Total citas en este minuto: ' . $totalAhora);
+        $this->info('Total citas en este minuto con email: ' . $totalConEmail);
+        $this->info('Total citas en este minuto con estado válido: ' . $totalEstadoValido);
 
         $citas = Cita::with(['paciente', 'terapeuta'])
-            ->whereDate('inicio', $manana->toDateString())
+            ->whereBetween('inicio', [$inicioMinuto, $finMinuto])
             ->whereNotIn('estado', ['cancelada', 'no_asistio'])
             ->whereHas('paciente', fn ($q) => $q
                 ->whereNotNull('email')
@@ -47,18 +51,19 @@ class EnviarRecordatoriosCitas extends Command
             ->get();
 
         if ($citas->isEmpty()) {
-            $this->info('No hay citas mañana con correo de paciente registrado.');
+            $this->info('No hay citas en este minuto con correo de paciente registrado.');
             return self::SUCCESS;
         }
 
         $dry = $this->option('dry-run');
 
         $this->table(
-            ['Paciente', 'Email', 'Hora', 'Estado'],
+            ['Paciente', 'Email', 'Fecha', 'Hora', 'Estado'],
             $citas->map(fn ($c) => [
                 $c->paciente->nombre_completo,
                 $c->paciente->email,
-                $c->inicio->format('H:i'),
+                $c->inicio->format('Y-m-d'),
+                $c->inicio->format('H:i:s'),
                 $c->estado ?? 'programada',
             ])
         );
@@ -69,15 +74,15 @@ class EnviarRecordatoriosCitas extends Command
         }
 
         $enviados = 0;
-        $errores  = 0;
+        $errores = 0;
 
         foreach ($citas as $cita) {
             try {
                 Mail::to($cita->paciente->email)->send(new RecordatorioCita($cita));
-                $this->line(" ✓ Enviado a {$cita->paciente->email}");
+                $this->line("Enviado a {$cita->paciente->email}");
                 $enviados++;
             } catch (\Throwable $e) {
-                $this->error(" ✗ Error con {$cita->paciente->email}: {$e->getMessage()}");
+                $this->error("Error con {$cita->paciente->email}: {$e->getMessage()}");
                 $errores++;
             }
         }
