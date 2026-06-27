@@ -11,38 +11,34 @@ class EnviarRecordatoriosCitas extends Command
 {
     protected $signature = 'citas:recordatorios {--dry-run : Muestra las citas sin enviar correos}';
 
-    protected $description = 'Envía recordatorios por correo a los pacientes con cita en el minuto actual';
+    protected $description = 'Envía recordatorios por correo a los pacientes con cita mañana';
 
     public function handle(): int
     {
-        $ahora = now();
+        $fechaObjetivo = now()->addDay()->toDateString();
 
-        $inicioMinuto = $ahora->copy()->startOfMinute();
-        $finMinuto = $ahora->copy()->endOfMinute();
+        $this->info('Ahora Laravel: ' . now()->format('Y-m-d H:i:s T'));
+        $this->info('Buscando citas para mañana: ' . $fechaObjetivo);
 
-        $this->info('Ahora Laravel: ' . $ahora->format('Y-m-d H:i:s T'));
-        $this->info('Buscando citas desde: ' . $inicioMinuto->format('Y-m-d H:i:s'));
-        $this->info('Buscando citas hasta: ' . $finMinuto->format('Y-m-d H:i:s'));
+        $totalManana = Cita::whereDate('inicio', $fechaObjetivo)->count();
 
-        $totalAhora = Cita::whereBetween('inicio', [$inicioMinuto, $finMinuto])->count();
-
-        $totalConEmail = Cita::whereBetween('inicio', [$inicioMinuto, $finMinuto])
+        $totalConEmail = Cita::whereDate('inicio', $fechaObjetivo)
             ->whereHas('paciente', fn ($q) => $q
                 ->whereNotNull('email')
                 ->where('email', '!=', '')
             )
             ->count();
 
-        $totalEstadoValido = Cita::whereBetween('inicio', [$inicioMinuto, $finMinuto])
+        $totalEstadoValido = Cita::whereDate('inicio', $fechaObjetivo)
             ->whereNotIn('estado', ['cancelada', 'no_asistio'])
             ->count();
 
-        $this->info('Total citas en este minuto: ' . $totalAhora);
-        $this->info('Total citas en este minuto con email: ' . $totalConEmail);
-        $this->info('Total citas en este minuto con estado válido: ' . $totalEstadoValido);
+        $this->info('Total citas mañana: ' . $totalManana);
+        $this->info('Total citas mañana con email: ' . $totalConEmail);
+        $this->info('Total citas mañana con estado válido: ' . $totalEstadoValido);
 
         $citas = Cita::with(['paciente', 'terapeuta'])
-            ->whereBetween('inicio', [$inicioMinuto, $finMinuto])
+            ->whereDate('inicio', $fechaObjetivo)
             ->whereNotIn('estado', ['cancelada', 'no_asistio'])
             ->whereHas('paciente', fn ($q) => $q
                 ->whereNotNull('email')
@@ -51,7 +47,7 @@ class EnviarRecordatoriosCitas extends Command
             ->get();
 
         if ($citas->isEmpty()) {
-            $this->info('No hay citas en este minuto con correo de paciente registrado.');
+            $this->info('No hay citas mañana con correo de paciente registrado.');
             return self::SUCCESS;
         }
 
